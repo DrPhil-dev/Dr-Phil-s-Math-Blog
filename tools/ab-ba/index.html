@@ -1,0 +1,213 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Solving a^b = b^a in Natural Numbers</title>
+<meta name="description" content="A full proof that the only natural-number solutions to a^b = b^a are the trivial pairs (n, n) and the pair (2, 4), given two ways: a calculus argument using the function log(x)/x, and a purely arithmetical derivation." />
+
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://api.fontshare.com/v2/css?f[]=jetbrains-mono@400,500,700&display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400..700&display=swap" rel="stylesheet" />
+
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%230b0f14'/%3E%3Cpath d='M8 24 Q14 8 20 8 Q26 8 24 24' fill='none' stroke='%2358d3c9' stroke-width='1.8'/%3E%3Ccircle cx='13' cy='16.2' r='2' fill='%23e3a548'/%3E%3Ccircle cx='19.6' cy='16.2' r='2' fill='%23e3a548'/%3E%3C/svg%3E" />
+
+<link rel="stylesheet" href="css/base.css" />
+<link rel="stylesheet" href="css/theme.css" />
+<link rel="stylesheet" href="css/style.css" />
+
+<script>
+  window.MathJax = {
+    tex: { inlineMath: [['\\(', '\\)']], displayMath: [['\\[', '\\]']] },
+    svg: { fontCache: 'global' },
+    startup: {
+      pageReady() {
+        return MathJax.startup.defaultPageReady().then(() => {
+          const fixBaselines = () => {
+            document.querySelectorAll('.writeup mjx-container:not([display="true"]), .figure-caption mjx-container:not([display="true"])').forEach((c) => {
+              const svg = c.querySelector('svg');
+              if (!svg) return;
+              const match = (svg.getAttribute('style') || '').match(/vertical-align:\s*(-?[\d.]+)(ex|px)/);
+              if (match) c.style.verticalAlign = match[1] + match[2];
+            });
+          };
+          fixBaselines();
+          new MutationObserver(fixBaselines).observe(document.body, { childList: true, subtree: true });
+        });
+      }
+    }
+  };
+</script>
+<script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
+</head>
+<body>
+<div class="app">
+
+  <header class="topbar">
+    <div class="brand" aria-label="a to the b equals b to the a logo">
+      <svg width="30" height="30" viewBox="0 0 32 32" fill="none" aria-hidden="true">
+        <path d="M8 24 Q14 8 20 8 Q26 8 24 24" fill="none" stroke="var(--c-a)" stroke-width="1.8"/>
+        <circle cx="13" cy="16.2" r="2" fill="var(--c-b)"/>
+        <circle cx="19.6" cy="16.2" r="2" fill="var(--c-b)"/>
+      </svg>
+      <div class="brand-text">
+        <span class="brand-title">a<sup>b</sup> = b<sup>a</sup></span>
+        <span class="brand-sub">Solving in natural numbers</span>
+      </div>
+    </div>
+
+    <div class="topbar-actions">
+      <a class="btn btn-ghost" href="../../">&larr; Dr Phil's Math Blog</a>
+      <button class="theme-toggle" id="themeToggle" type="button" aria-label="Switch theme">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <section class="figure-wrap">
+    <svg id="figureStage" viewBox="0 0 640 420" aria-label="Plot of f(x) = log(x)/x, peaking at (e, 1/e), with a horizontal guide showing that f(2) equals f(4)">
+      <line class="axis-line" x1="55" y1="25" x2="55" y2="375"/>
+      <line class="axis-line" x1="55" y1="375" x2="620" y2="375"/>
+
+      <line class="grid-tick" x1="122.9" y1="371" x2="122.9" y2="379"/>
+      <line class="grid-tick" x1="190.8" y1="371" x2="190.8" y2="379"/>
+      <line class="grid-tick" x1="258.6" y1="371" x2="258.6" y2="379"/>
+      <line class="grid-tick" x1="326.5" y1="371" x2="326.5" y2="379"/>
+      <line class="grid-tick" x1="394.4" y1="371" x2="394.4" y2="379"/>
+      <line class="grid-tick" x1="462.3" y1="371" x2="462.3" y2="379"/>
+      <line class="grid-tick" x1="530.2" y1="371" x2="530.2" y2="379"/>
+      <line class="grid-tick" x1="598.0" y1="371" x2="598.0" y2="379"/>
+      <text class="tick-label" x="119.9" y="392">2</text>
+      <text class="tick-label" x="187.8" y="392">4</text>
+      <text class="tick-label" x="255.6" y="392">6</text>
+      <text class="tick-label" x="323.5" y="392">8</text>
+      <text class="tick-label" x="388.4" y="392">10</text>
+      <text class="tick-label" x="456.3" y="392">12</text>
+      <text class="tick-label" x="524.2" y="392">14</text>
+      <text class="tick-label" x="592.0" y="392">16</text>
+
+      <line class="grid-tick" x1="51" y1="291.7" x2="59" y2="291.7"/>
+      <line class="grid-tick" x1="51" y1="208.3" x2="59" y2="208.3"/>
+      <line class="grid-tick" x1="51" y1="125.0" x2="59" y2="125.0"/>
+      <line class="grid-tick" x1="51" y1="41.7" x2="59" y2="41.7"/>
+      <text class="tick-label" x="28" y="295.7">0.1</text>
+      <text class="tick-label" x="28" y="212.3">0.2</text>
+      <text class="tick-label" x="28" y="129.0">0.3</text>
+      <text class="tick-label" x="28" y="45.7">0.4</text>
+
+      <path class="path-curve" d="M 87.38 380.00 L 88.26 380.00 L 89.14 370.19 L 90.02 349.77 L 90.90 330.85 L 91.78 313.29 L 92.65 296.98 L 93.53 281.82 L 94.41 267.70 L 95.29 254.56 L 96.17 242.30 L 97.05 230.86 L 97.93 220.18 L 98.81 210.19 L 99.69 200.86 L 100.57 192.12 L 101.45 183.95 L 102.33 176.29 L 103.21 169.11 L 104.09 162.39 L 104.97 156.08 L 105.84 150.16 L 106.72 144.61 L 107.60 139.39 L 108.48 134.50 L 109.36 129.91 L 110.24 125.59 L 111.12 121.54 L 112.00 117.74 L 112.88 114.16 L 113.76 110.81 L 114.64 107.66 L 115.52 104.70 L 116.40 101.93 L 117.28 99.33 L 118.16 96.89 L 119.04 94.60 L 119.91 92.45 L 120.79 90.45 L 121.67 88.57 L 122.55 86.81 L 123.43 85.17 L 124.31 83.64 L 125.19 82.21 L 126.07 80.87 L 126.95 79.63 L 127.83 78.48 L 128.71 77.42 L 129.59 76.43 L 130.47 75.51 L 131.35 74.67 L 132.23 73.90 L 133.11 73.19 L 133.98 72.54 L 134.86 71.95 L 135.74 71.41 L 136.62 70.93 L 137.50 70.50 L 138.38 70.11 L 139.26 69.77 L 140.14 69.48 L 141.02 69.22 L 141.90 69.00 L 142.78 68.83 L 143.66 68.68 L 144.54 68.57 L 145.42 68.50 L 146.30 68.45 L 147.18 68.43 L 148.05 68.45 L 148.93 68.48 L 149.81 68.55 L 150.69 68.63 L 151.57 68.74 L 152.45 68.88 L 153.33 69.03 L 154.21 69.21 L 155.09 69.40 L 155.97 69.61 L 156.85 69.84 L 157.73 70.08 L 158.61 70.34 L 159.49 70.62 L 160.37 70.91 L 161.25 71.22 L 162.12 71.53 L 163.00 71.86 L 163.88 72.21 L 164.76 72.56 L 165.64 72.92 L 166.52 73.30 L 167.40 73.68 L 168.28 74.07 L 169.16 74.48 L 170.04 74.89 L 170.92 75.31 L 171.80 75.73 L 172.68 76.17 L 173.56 76.61 L 174.44 77.05 L 175.32 77.51 L 176.19 77.97 L 177.07 78.43 L 177.95 78.90 L 178.83 79.38 L 179.71 79.85 L 180.59 80.34 L 181.47 80.83 L 182.35 81.32 L 183.23 81.82 L 184.11 82.32 L 184.99 82.82 L 185.87 83.33 L 186.75 83.83 L 187.63 84.35 L 188.51 84.86 L 189.39 85.38 L 190.26 85.90 L 191.14 86.42 L 192.02 86.94 L 192.90 87.47 L 193.78 87.99 L 194.66 88.52 L 195.54 89.05 L 196.42 89.58 L 197.30 90.11 L 198.18 90.64 L 199.06 91.18 L 199.94 91.71 L 200.82 92.25 L 201.70 92.78 L 202.58 93.32 L 203.45 93.86 L 204.33 94.39 L 205.21 94.93 L 206.09 95.47 L 206.97 96.01 L 207.85 96.54 L 208.73 97.08 L 209.61 97.62 L 210.49 98.16 L 211.37 98.69 L 212.25 99.23 L 213.13 99.76 L 214.01 100.30 L 214.89 100.84 L 215.77 101.37 L 216.65 101.90 L 217.52 102.44 L 218.40 102.97 L 219.28 103.50 L 220.16 104.03 L 221.04 104.56 L 221.92 105.09 L 222.80 105.62 L 223.68 106.15 L 224.56 106.68 L 225.44 107.20 L 226.32 107.73 L 227.20 108.25 L 228.08 108.78 L 228.96 109.30 L 229.84 109.82 L 230.72 110.34 L 231.59 110.86 L 232.47 111.37 L 233.35 111.89 L 234.23 112.40 L 235.11 112.92 L 235.99 113.43 L 236.87 113.94 L 237.75 114.45 L 238.63 114.96 L 239.51 115.47 L 240.39 115.97 L 241.27 116.48 L 242.15 116.98 L 243.03 117.48 L 243.91 117.98 L 244.79 118.48 L 245.66 118.98 L 246.54 119.47 L 247.42 119.97 L 248.30 120.46 L 249.18 120.95 L 250.06 121.44 L 250.94 121.93 L 251.82 122.42 L 252.70 122.90 L 253.58 123.39 L 254.46 123.87 L 255.34 124.35 L 256.22 124.83 L 257.10 125.31 L 257.98 125.79 L 258.86 126.26 L 259.73 126.74 L 260.61 127.21 L 261.49 127.68 L 262.37 128.15 L 263.25 128.62 L 264.13 129.08 L 265.01 129.55 L 265.89 130.01 L 266.77 130.47 L 267.65 130.93 L 268.53 131.39 L 269.41 131.85 L 270.29 132.30 L 271.17 132.76 L 272.05 133.21 L 272.93 133.66 L 273.80 134.11 L 274.68 134.56 L 275.56 135.00 L 276.44 135.45 L 277.32 135.89 L 278.20 136.33 L 279.08 136.77 L 279.96 137.21 L 280.84 137.65 L 281.72 138.09 L 282.60 138.52 L 283.48 138.95 L 284.36 139.38 L 285.24 139.81 L 286.12 140.24 L 287.00 140.67 L 287.87 141.09 L 288.75 141.52 L 289.63 141.94 L 290.51 142.36 L 291.39 142.78 L 292.27 143.20 L 293.15 143.62 L 294.03 144.03 L 294.91 144.45 L 295.79 144.86 L 296.67 145.27 L 297.55 145.68 L 298.43 146.09 L 299.31 146.49 L 300.19 146.90 L 301.07 147.30 L 301.94 147.70 L 302.82 148.10 L 303.70 148.50 L 304.58 148.90 L 305.46 149.30 L 306.34 149.69 L 307.22 150.09 L 308.10 150.48 L 308.98 150.87 L 309.86 151.26 L 310.74 151.65 L 311.62 152.04 L 312.50 152.42 L 313.38 152.81 L 314.26 153.19 L 315.13 153.57 L 316.01 153.95 L 316.89 154.33 L 317.77 154.71 L 318.65 155.08 L 319.53 155.46 L 320.41 155.83 L 321.29 156.21 L 322.17 156.58 L 323.05 156.95 L 323.93 157.31 L 324.81 157.68 L 325.69 158.05 L 326.57 158.41 L 327.45 158.78 L 328.33 159.14 L 329.20 159.50 L 330.08 159.86 L 330.96 160.22 L 331.84 160.57 L 332.72 160.93 L 333.60 161.29 L 334.48 161.64 L 335.36 161.99 L 336.24 162.34 L 337.12 162.69 L 338.00 163.04 L 338.88 163.39 L 339.76 163.73 L 340.64 164.08 L 341.52 164.42 L 342.40 164.77 L 343.27 165.11 L 344.15 165.45 L 345.03 165.79 L 345.91 166.13 L 346.79 166.46 L 347.67 166.80 L 348.55 167.13 L 349.43 167.47 L 350.31 167.80 L 351.19 168.13 L 352.07 168.46 L 352.95 168.79 L 353.83 169.12 L 354.71 169.44 L 355.59 169.77 L 356.47 170.09 L 357.34 170.42 L 358.22 170.74 L 359.10 171.06 L 359.98 171.38 L 360.86 171.70 L 361.74 172.02 L 362.62 172.34 L 363.50 172.65 L 364.38 172.97 L 365.26 173.28 L 366.14 173.59 L 367.02 173.91 L 367.90 174.22 L 368.78 174.53 L 369.66 174.83 L 370.54 175.14 L 371.41 175.45 L 372.29 175.75 L 373.17 176.06 L 374.05 176.36 L 374.93 176.67 L 375.81 176.97 L 376.69 177.27 L 377.57 177.57 L 378.45 177.87 L 379.33 178.16 L 380.21 178.46 L 381.09 178.76 L 381.97 179.05 L 382.85 179.35 L 383.73 179.64 L 384.61 179.93 L 385.48 180.22 L 386.36 180.51 L 387.24 180.80 L 388.12 181.09 L 389.00 181.38 L 389.88 181.66 L 390.76 181.95 L 391.64 182.23 L 392.52 182.52 L 393.40 182.80 L 394.28 183.08 L 395.16 183.36 L 396.04 183.64 L 396.92 183.92 L 397.80 184.20 L 398.68 184.48 L 399.55 184.75 L 400.43 185.03 L 401.31 185.30 L 402.19 185.58 L 403.07 185.85 L 403.95 186.12 L 404.83 186.39 L 405.71 186.66 L 406.59 186.93 L 407.47 187.20 L 408.35 187.47 L 409.23 187.74 L 410.11 188.00 L 410.99 188.27 L 411.87 188.53 L 412.74 188.80 L 413.62 189.06 L 414.50 189.32 L 415.38 189.58 L 416.26 189.84 L 417.14 190.10 L 418.02 190.36 L 418.90 190.62 L 419.78 190.88 L 420.66 191.14 L 421.54 191.39 L 422.42 191.65 L 423.30 191.90 L 424.18 192.15 L 425.06 192.41 L 425.94 192.66 L 426.81 192.91 L 427.69 193.16 L 428.57 193.41 L 429.45 193.66 L 430.33 193.91 L 431.21 194.15 L 432.09 194.40 L 432.97 194.65 L 433.85 194.89 L 434.73 195.14 L 435.61 195.38 L 436.49 195.62 L 437.37 195.86 L 438.25 196.11 L 439.13 196.35 L 440.01 196.59 L 440.88 196.83 L 441.76 197.07 L 442.64 197.30 L 443.52 197.54 L 444.40 197.78 L 445.28 198.01 L 446.16 198.25 L 447.04 198.48 L 447.92 198.72 L 448.80 198.95 L 449.68 199.18 L 450.56 199.41 L 451.44 199.64 L 452.32 199.87 L 453.20 200.10 L 454.08 200.33 L 454.95 200.56 L 455.83 200.79 L 456.71 201.02 L 457.59 201.24 L 458.47 201.47 L 459.35 201.69 L 460.23 201.92 L 461.11 202.14 L 461.99 202.37 L 462.87 202.59 L 463.75 202.81 L 464.63 203.03 L 465.51 203.25 L 466.39 203.47 L 467.27 203.69 L 468.15 203.91 L 469.02 204.13 L 469.90 204.35 L 470.78 204.56 L 471.66 204.78 L 472.54 204.99 L 473.42 205.21 L 474.30 205.42 L 475.18 205.64 L 476.06 205.85 L 476.94 206.06 L 477.82 206.28 L 478.70 206.49 L 479.58 206.70 L 480.46 206.91 L 481.34 207.12 L 482.22 207.33 L 483.09 207.54 L 483.97 207.74 L 484.85 207.95 L 485.73 208.16 L 486.61 208.36 L 487.49 208.57 L 488.37 208.78 L 489.25 208.98 L 490.13 209.18 L 491.01 209.39 L 491.89 209.59 L 492.77 209.79 L 493.65 209.99 L 494.53 210.20 L 495.41 210.40 L 496.29 210.60 L 497.16 210.80 L 498.04 211.00 L 498.92 211.19 L 499.80 211.39 L 500.68 211.59 L 501.56 211.79 L 502.44 211.98 L 503.32 212.18 L 504.20 212.37 L 505.08 212.57 L 505.96 212.76 L 506.84 212.96 L 507.72 213.15 L 508.60 213.34 L 509.48 213.54 L 510.36 213.73 L 511.23 213.92 L 512.11 214.11 L 512.99 214.30 L 513.87 214.49 L 514.75 214.68 L 515.63 214.87 L 516.51 215.06 L 517.39 215.24 L 518.27 215.43 L 519.15 215.62 L 520.03 215.80 L 520.91 215.99 L 521.79 216.17 L 522.67 216.36 L 523.55 216.54 L 524.42 216.73 L 525.30 216.91 L 526.18 217.09 L 527.06 217.28 L 527.94 217.46 L 528.82 217.64 L 529.70 217.82 L 530.58 218.00 L 531.46 218.18 L 532.34 218.36 L 533.22 218.54 L 534.10 218.72 L 534.98 218.90 L 535.86 219.08 L 536.74 219.25 L 537.62 219.43 L 538.49 219.61 L 539.37 219.78 L 540.25 219.96 L 541.13 220.13 L 542.01 220.31 L 542.89 220.48 L 543.77 220.66 L 544.65 220.83 L 545.53 221.00 L 546.41 221.17 L 547.29 221.35 L 548.17 221.52 L 549.05 221.69 L 549.93 221.86 L 550.81 222.03 L 551.69 222.20 L 552.56 222.37 L 553.44 222.54 L 554.32 222.71 L 555.20 222.88 L 556.08 223.04 L 556.96 223.21 L 557.84 223.38 L 558.72 223.54 L 559.60 223.71 L 560.48 223.88 L 561.36 224.04 L 562.24 224.21 L 563.12 224.37 L 564.00 224.54 L 564.88 224.70 L 565.76 224.86 L 566.63 225.03 L 567.51 225.19 L 568.39 225.35 L 569.27 225.51 L 570.15 225.67 L 571.03 225.83 L 571.91 225.99 L 572.79 226.15 L 573.67 226.31 L 574.55 226.47 L 575.43 226.63 L 576.31 226.79 L 577.19 226.95 L 578.07 227.11 L 578.95 227.27 L 579.83 227.42 L 580.70 227.58 L 581.58 227.74 L 582.46 227.89 L 583.34 228.05 L 584.22 228.20 L 585.10 228.36 L 585.98 228.51 L 586.86 228.67 L 587.74 228.82 L 588.62 228.97 L 589.50 229.13 L 590.38 229.28 L 591.26 229.43 L 592.14 229.58 L 593.02 229.74 L 593.90 229.89 L 594.77 230.04 L 595.65 230.19 L 596.53 230.34 L 597.41 230.49 L 598.29 230.64 L 599.17 230.79 L 600.05 230.94 L 600.93 231.09 L 601.81 231.23 L 602.69 231.38 L 603.57 231.53 L 604.45 231.68 L 605.33 231.82 L 606.21 231.97 L 607.09 232.12 L 607.97 232.26 L 608.84 232.41 L 609.72 232.55 L 610.60 232.70 L 611.48 232.84 L 612.36 232.99 L 613.24 233.13 L 614.12 233.27 L 615.00 233.42"/>
+
+      <line class="guide-line" x1="147.2" y1="68.4" x2="147.2" y2="375"/>
+      <line class="guide-line" x1="55" y1="68.4" x2="147.2" y2="68.4"/>
+      <text class="tick-label" x="152" y="72">(e, 1/e)</text>
+
+      <line class="guide-line-solid" x1="55" y1="86.2" x2="190.8" y2="86.2"/>
+      <line class="guide-line" x1="122.9" y1="86.2" x2="122.9" y2="375"/>
+      <line class="guide-line" x1="190.8" y1="86.2" x2="190.8" y2="375"/>
+      <circle class="pt-marker" cx="122.9" cy="86.2" r="4"/>
+      <circle class="pt-marker" cx="190.8" cy="86.2" r="4"/>
+
+      <text class="curve-label" x="440" y="200">log(x)/x</text>
+    </svg>
+  </section>
+  <p class="figure-caption">The function \(f(x) = \dfrac{\log x}{x}\), with its unique maximum at \((e,\,1/e)\) and the horizontal line showing \(f(2) = f(4)\), the graphical signature of the (2, 4) solution.</p>
+
+  <article class="writeup">
+    <div class="writeup-inner">
+
+      <p class="kicker">A short number theory proof</p>
+      <h1>Solving \(a^b = b^a\) in Natural Numbers</h1>
+      <p class="lede">A proof that the only solutions to \(a^b = b^a\) in natural numbers are the trivial pairs \((n, n)\) and the single nontrivial pair \((2, 4)\), given two independent ways: a calculus argument using the shape of \(\log(x)/x\), and a purely arithmetical derivation that needs nothing beyond the Bernoulli inequality.</p>
+
+      <h2>1. Introduction</h2>
+      <p>We look for all pairs of natural numbers \(a, b\) satisfying</p>
+      <p>\[ a^b = b^a. \]</p>
+      <ul>
+        <li>Trivially, \((a,b) = (1,1)\), and more generally every pair \((n,n)\), is a solution.</li>
+        <li>Observe by inspection that \((2,4)\) is also a solution: \(2^4 = 16 = 4^2\).</li>
+        <li>The expression is symmetric in \(a\) and \(b\), so you will also get the solution \((4,2)\), and in general \((n_2, n_1)\) whenever \((n_1, n_2)\) is a solution.</li>
+      </ul>
+      <p>Taking logarithms, rewrite the problem as</p>
+      <p>\[ a^b = b^a \;\Rightarrow\; b\log a = a \log b \;\Rightarrow\; \frac{\log a}{a} = \frac{\log b}{b}. \]</p>
+      <p>So solving \(a^b = b^a\) is the same as finding pairs \(a \ne b\) where the function \(\log(x)/x\) takes the same value twice.</p>
+
+      <h2>2. Calculus: A Graphical Investigation</h2>
+      <p>Sketch</p>
+      <p>\[ f(x) = \frac{\log x}{x}. \]</p>
+      <p>Its derivative is</p>
+      <p>\[ \frac{df(x)}{dx} = \frac{1}{x^2} - \frac{\log x}{x^2} = \frac{1 - \log x}{x^2}, \]</p>
+      <p>which is zero when \(\log x = 1\), that is \(x = e\). So the unique stationary point of \(f\) is \((e,\, 1/e)\), and it is a maximum: \(f\) rises on \((0, e)\) and falls on \((e, \infty)\).</p>
+
+      <p>Because \(f\) is strictly increasing before \(e\) and strictly decreasing after \(e\), any horizontal line \(y = c\) with \(0 < c < 1/e\) crosses the graph at exactly two points, one below \(e\) and one above \(e\). That is exactly the geometric picture of \(a^b = b^a\): two natural numbers \(a \ne b\) with \(f(a) = f(b)\) correspond to one point on each branch.</p>
+
+      <p>Observe that for any \(w > e\), the equation \(f(w) = f(x)\) forces \(x < e\), and the integer pair \((x, w) = (2, 4)\) satisfies this: \(f(2) = f(4) = \tfrac{1}{2}\log 2\). For any other \(w > 4\), requiring \(f(w) = f(x)\) forces \(x < 2\), and since the only natural number below \(2\) is \(1\), where \(f(1) = 0 \ne f(w)\) for \(w > 1\), there is no further natural-number match. This proves that all solutions to \(a^b = b^a\) are the trivial pairs \((n,n)\) together with \((2,4)\). \(\blacksquare\)</p>
+
+      <div class="aside-note">
+        <p>This graphical argument is short and convincing, but it leans on "observe that" and "convince yourself" at the key step. The next section makes the same conclusion airtight with pure algebra, no picture required.</p>
+      </div>
+
+      <h2>3. Arithmetical / Algebraic Investigation</h2>
+      <p>If either \(a\) or \(b\) equals \(1\), then \(a^b = b^a\) forces both to equal \(1\), giving the trivial pair \((1,1)\). In what follows, exclude this case, so \(a, b \ge 2\).</p>
+
+      <p>From \(a^b = b^a\),</p>
+      <p>\[ a = b^{a/b} = \left(\sqrt[b]{b}\,\right)^{a}. \]</p>
+      <p>Look at the sequence</p>
+      <p>\[ \sqrt[b]{b} = \sqrt{2},\ \sqrt[3]{3},\ \sqrt[4]{4},\ \sqrt[5]{5},\ \dots \]</p>
+      <p>and convince yourself that since \(a = \left(\sqrt[b]{b}\right)^{a}\) must be a natural number, it follows that:</p>
+
+      <ol>
+        <li><p>1) \(a = b^k\), for some natural \(k\). Substituting into \(b^a = a^b\) gives</p>
+        <p>\[ b^{(b^k)} = (b^k)^b = b^{bk}, \]</p>
+        <p>which, since the bases match, means the exponents match too, or</p></li>
+      </ol>
+
+      <p>2) \(kb = bk\), which yields, dividing both sides by \(b\), that</p>
+      <p>3) \(k = b^{k-1}\), for some natural \(k\).</p>
+      <p>If we find all solutions to (3), we are done.</p>
+
+      <p><strong>A)</strong> if \(k = 1\), then from (1), \(a = b^k = b^1 = b\); that is, the trivial case.</p>
+      <p><strong>B)</strong> if \(k \ne 1\), then from (3), \(b = k^{1/(k-1)}\).</p>
+
+      <p>Put \(m = k - 1\) and write \(b = k^{1/(k-1)}\) as</p>
+      <p>\[ b = (1+m)^{1/m}. \]</p>
+      <p>Use the Bernoulli inequality:</p>
+      <div class="result-box">
+        <p>\[ (1+x)^p < 1 + px, \qquad \text{if } x > 0 \text{ and } 0 < p < 1. \tag{B} \]</p>
+      </div>
+      <p>4) \(\displaystyle b = (1+m)^{1/m} < 1 + m\cdot\frac{1}{m} = 2\), if \(0 < 1/m < 1\), by property (B).</p>
+
+      <p>Here we get three cases, on \(m = k - 1\):</p>
+
+      <h3>Case m = 0</h3>
+      <p>This was already discussed in (A): it gives back \(k = 1\), the trivial case.</p>
+
+      <h3>Case m = 1</h3>
+      <p>Property (B) required \(p = 1/m < 1\), but that fails when \(m = 1\), so inequality (4) does not apply here and must be checked directly. From (3):</p>
+      <p>\[ b = b^1 = 1 + 1 = 2, \]</p>
+      <p>further, according to (2),</p>
+      <p>\[ k = b^1 = 2, \]</p>
+      <p>and finally, according to (1),</p>
+      <p>\[ a = b^k = b^2 = 2^2 = 4. \]</p>
+      <p>Thus we recover the solution \((2, 4)\).</p>
+
+      <h3>Case m &gt; 1</h3>
+      <p>Here \(k = m + 1 > 2\), so \(b = k^{1/(k-1)} > 1\), but inequality (4) forces \(b < 2\). So \(1 < b < 2\), yet \(b\) is a natural number, a contradiction. Thus, there are no more solutions.</p>
+
+      <div class="result-box">
+        <p>\[ \displaystyle \text{The only solutions to } a^b = b^a \text{ in natural numbers are } (n,n) \text{ and } (2,4),\ (4,2). \]</p>
+      </div>
+      <p>This concludes the proof. \(\blacksquare\)</p>
+
+      <div class="aside-note">
+        <p>The two approaches agree, as they must, but they earn the result differently. The calculus route reads the answer off the shape of a single curve; the algebraic route derives it from a divisibility argument and one clean use of the Bernoulli inequality, with no picture needed at all.</p>
+      </div>
+
+    </div>
+  </article>
+
+</div>
+
+<script src="js/app.js"></script>
+</body>
+</html>
