@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Dr Phil's Math Blog</title>
+<meta name="description" content="Interactive math tools and explainers from Dr Phil — starting with a live, draggable illustration of Monge's theorem." />
+
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://api.fontshare.com/v2/css?f[]=jetbrains-mono@400,500,700&display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400..700&display=swap" rel="stylesheet" />
+
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%230b0f14'/%3E%3Ccircle cx='11' cy='20' r='6' fill='none' stroke='%2358d3c9' stroke-width='1.6'/%3E%3Ccircle cx='21' cy='20' r='4' fill='none' stroke='%23e3a548' stroke-width='1.6'/%3E%3Ccircle cx='24' cy='10' r='3' fill='none' stroke='%23e3a548' stroke-width='1.6'/%3E%3Cline x1='4' y1='27' x2='29' y2='4' stroke='%23f2f4f6' stroke-width='1.2'/%3E%3C/svg%3E" />
+
+<link rel="stylesheet" href="css/base.css" />
+<link rel="stylesheet" href="css/theme.css" />
+<link rel="stylesheet" href="css/home.css" />
+</head>
+<body>
+<div class="home">
+
+  <header class="home-topbar">
+    <div class="brand" aria-label="Dr Phil's Math Blog logo">
+      <svg width="30" height="30" viewBox="0 0 32 32" fill="none" aria-hidden="true">
+        <circle cx="11" cy="21" r="7" stroke="var(--c-a)" stroke-width="1.6"/>
+        <circle cx="21" cy="21" r="4.5" stroke="var(--c-b)" stroke-width="1.6"/>
+        <circle cx="24" cy="10" r="3.2" stroke="var(--c-c)" stroke-width="1.6"/>
+        <line x1="3" y1="28.5" x2="29.5" y2="3" stroke="var(--color-text)" stroke-width="1.3"/>
+      </svg>
+      <div class="brand-text">
+        <span class="brand-title">Dr Phil's Math Blog</span>
+        <span class="brand-sub">Interactive tools for seeing the proof</span>
+      </div>
+    </div>
+    <button class="theme-toggle" id="themeToggle" type="button" aria-label="Switch to light mode">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+    </button>
+  </header>
+
+  <main class="home-main">
+
+    <section class="hero">
+      <h1>Math you can drag around.</h1>
+      <p>Every tool here turns a theorem into something you can move with your hands. Drag the shapes, watch the invariants hold, and see for yourself why the proof works &mdash; not just read that it does.</p>
+    </section>
+
+    <section class="tool-grid">
+
+      <a class="tool-card" href="tools/monge-theorem/">
+        <div class="tool-card-preview" aria-hidden="true">
+          <svg viewBox="0 0 220 140" width="100%" height="100%">
+            <circle cx="55" cy="95" r="34" fill="none" stroke="var(--c-a)" stroke-width="2"/>
+            <circle cx="120" cy="100" r="20" fill="none" stroke="var(--c-b)" stroke-width="2"/>
+            <circle cx="140" cy="45" r="26" fill="none" stroke="var(--c-c)" stroke-width="2"/>
+            <line x1="10" y1="130" x2="210" y2="10" stroke="var(--color-text)" stroke-width="1.4"/>
+            <circle cx="196" cy="18" r="3" fill="var(--ext-color)"/>
+            <circle cx="150" cy="65" r="3" fill="var(--ext-color)"/>
+            <circle cx="30" cy="118" r="3" fill="var(--ext-color)"/>
+          </svg>
+        </div>
+        <div class="tool-card-body">
+          <h2>Monge's Theorem</h2>
+          <p>Drag three circles and watch their external centers of similitude stay collinear in real time, with the actual common tangent lines drawn in.</p>
+          <span class="tool-card-cta">Open the tool &rarr;</span>
+        </div>
+      </a>
+
+      <div class="tool-card tool-card-placeholder" aria-hidden="true">
+        <div class="tool-card-preview tool-card-preview-empty">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 5v14M5 12h14"/></svg>
+        </div>
+        <div class="tool-card-body">
+          <h2>More on the way</h2>
+          <p>New interactive tools and explainers get added here regularly. Check back soon.</p>
+        </div>
+      </div>
+
+    </section>
+
+  </main>
+
+  <footer class="home-footer">
+    <span>Dr Phil's Math Blog</span>
+    <a href="https://github.com/DrPhil-dev/monge-theorem" target="_blank" rel="noopener">Source on GitHub</a>
+  </footer>
+
+</div>
+
+<script src="js/home.js"></script>
+</body>
+</html>

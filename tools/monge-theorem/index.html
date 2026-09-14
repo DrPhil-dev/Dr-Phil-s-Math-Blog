@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Monge's Theorem — Interactive Centers of Similitude</title>
+<meta name="description" content="Drag three circles and watch their external centers of similitude stay collinear in real time, an interactive illustration of Monge's theorem." />
+
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://api.fontshare.com/v2/css?f[]=jetbrains-mono@400,500,700&display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400..700&display=swap" rel="stylesheet" />
+
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%230b0f14'/%3E%3Ccircle cx='11' cy='20' r='6' fill='none' stroke='%2358d3c9' stroke-width='1.6'/%3E%3Ccircle cx='21' cy='20' r='4' fill='none' stroke='%23e3a548' stroke-width='1.6'/%3E%3Ccircle cx='24' cy='10' r='3' fill='none' stroke='%23e3a548' stroke-width='1.6'/%3E%3Cline x1='4' y1='27' x2='29' y2='4' stroke='%23f2f4f6' stroke-width='1.2'/%3E%3C/svg%3E" />
+
+<link rel="stylesheet" href="css/base.css" />
+<link rel="stylesheet" href="css/theme.css" />
+<link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+<div class="app">
+
+  <header class="topbar">
+    <div class="brand" aria-label="Monge's Theorem tool logo">
+      <svg width="30" height="30" viewBox="0 0 32 32" fill="none" aria-hidden="true">
+        <circle cx="11" cy="21" r="7" stroke="var(--c-a)" stroke-width="1.6"/>
+        <circle cx="21" cy="21" r="4.5" stroke="var(--c-b)" stroke-width="1.6"/>
+        <circle cx="24" cy="10" r="3.2" stroke="var(--c-c)" stroke-width="1.6"/>
+        <line x1="3" y1="28.5" x2="29.5" y2="3" stroke="var(--color-text)" stroke-width="1.3"/>
+      </svg>
+      <div class="brand-text">
+        <span class="brand-title">Monge's&nbsp;Theorem</span>
+        <span class="brand-sub">Centers of similitude, live</span>
+      </div>
+    </div>
+
+    <div class="topbar-actions">
+      <a class="btn btn-ghost" href="../../">&larr; Dr Phil's Math Blog</a>
+      <label class="toggle-chip">
+        <input type="checkbox" id="toggleInternal" checked />
+        <span>Internal centers</span>
+      </label>
+      <label class="toggle-chip">
+        <input type="checkbox" id="toggleTangents" checked />
+        <span>Tangent lines</span>
+      </label>
+      <button class="btn btn-ghost" id="resetBtn" type="button">Reset</button>
+      <button class="theme-toggle" id="themeToggle" type="button" aria-label="Switch to light mode">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <main class="layout">
+
+    <section class="stage-wrap">
+      <canvas id="stage" aria-label="Interactive plane with three draggable circles"></canvas>
+      <div class="stage-hint" id="stageHint">Drag a circle to move it &middot; drag its edge handle to resize</div>
+      <div class="legend" id="legend">
+        <div class="legend-row"><span class="dot dot-line"></span> Axis of similitude (Monge line)</div>
+        <div class="legend-row"><span class="dot dot-ext"></span> External centers of similitude</div>
+        <div class="legend-row"><span class="dot dot-int"></span> Internal centers of similitude</div>
+        <div class="legend-row" id="legendTangentHeader"><span class="legend-divider"></span> Common external tangents</div>
+        <div class="legend-row"><span class="dot dot-pair-ab"></span> Pair A&ndash;B tangents</div>
+        <div class="legend-row"><span class="dot dot-pair-bc"></span> Pair B&ndash;C tangents</div>
+        <div class="legend-row"><span class="dot dot-pair-ac"></span> Pair A&ndash;C tangents</div>
+      </div>
+    </section>
+
+    <aside class="panel">
+
+      <div class="panel-section">
+        <h2 class="panel-title">Circles</h2>
+        <div class="circle-controls" id="circleControls"></div>
+      </div>
+
+      <div class="panel-section">
+        <h2 class="panel-title">External centers <span class="title-note">(exsimilicenters)</span></h2>
+        <div class="readout" id="externalReadout"></div>
+      </div>
+
+      <div class="panel-section">
+        <h2 class="panel-title">Internal centers <span class="title-note">(insimilicenters)</span></h2>
+        <div class="readout" id="internalReadout"></div>
+      </div>
+
+      <div class="panel-section">
+        <h2 class="panel-title">Collinearity check</h2>
+        <div class="collinearity-card" id="collinearityCard">
+          <div class="collinearity-metric">
+            <span class="metric-label">Max deviation from line</span>
+            <span class="metric-value" id="deviationValue">0.000 px</span>
+          </div>
+          <div class="collinearity-status" id="collinearityStatus">
+            <span class="status-dot"></span>
+            <span class="status-text">Collinear — Monge's theorem holds</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel-section panel-note">
+        <h2 class="panel-title">The theorem</h2>
+        <p>For any three circles with distinct radii, the three external centers of similitude &mdash; the points where a common external tangent line pair for each ordered pair of circles converge &mdash; always lie on one straight line, the <strong>axis of similitude</strong>. Each internal center of similitude also lies on a line with two external centers, showing the four-line concurrency structure behind Monge's theorem.</p>
+      </div>
+
+    </aside>
+  </main>
+</div>
+
+<script src="js/geometry.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
