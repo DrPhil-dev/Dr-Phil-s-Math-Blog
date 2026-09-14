@@ -20,7 +20,23 @@
 <script>
   window.MathJax = {
     tex: { inlineMath: [['\\(', '\\)']], displayMath: [['\\[', '\\]']] },
-    svg: { fontCache: 'global' }
+    svg: { fontCache: 'global' },
+    startup: {
+      pageReady() {
+        return MathJax.startup.defaultPageReady().then(() => {
+          const fixBaselines = () => {
+            document.querySelectorAll('.writeup mjx-container:not([display="true"])').forEach((c) => {
+              const svg = c.querySelector('svg');
+              if (!svg) return;
+              const match = (svg.getAttribute('style') || '').match(/vertical-align:\s*(-?[\d.]+)(ex|px)/);
+              if (match) c.style.verticalAlign = match[1] + match[2];
+            });
+          };
+          fixBaselines();
+          new MutationObserver(fixBaselines).observe(document.body, { childList: true, subtree: true });
+        });
+      }
+    }
   };
 </script>
 <script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
