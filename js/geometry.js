@@ -18,7 +18,7 @@ const Geometry = (() => {
    * Returns null if the circles have (numerically) equal radii —
    * the external center is at infinity (the pair's tangents are parallel).
    */
-  function externalCenter(c1, r1, c2, r2, eps = 1e-6) {
+  function externalCenter(c1, r1, c2, r2, eps = 0.05) {
     const denom = r2 - r1;
     if (Math.abs(denom) < eps) return null;
     return {
