@@ -1,0 +1,240 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Pizza Cutting — Maximum Pieces from Straight Cuts</title>
+<meta name="description" content="What is the maximum number of pieces a pizza can be cut into with n straight cuts? An interactive derivation of the lazy caterer's formula, with a slider you can drag yourself." />
+
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://api.fontshare.com/v2/css?f[]=jetbrains-mono@400,500,700&display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400..700&display=swap" rel="stylesheet" />
+
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%230b0f14'/%3E%3Ccircle cx='16' cy='16' r='11' fill='none' stroke='%2358d3c9' stroke-width='1.6'/%3E%3Cline x1='6' y1='9' x2='26' y2='23' stroke='%23f2f4f6' stroke-width='1.3'/%3E%3Cline x1='6' y1='23' x2='26' y2='9' stroke='%23e3a548' stroke-width='1.3'/%3E%3C/svg%3E" />
+
+<link rel="stylesheet" href="css/base.css" />
+<link rel="stylesheet" href="css/theme.css" />
+<link rel="stylesheet" href="css/style.css" />
+
+<script>
+  window.MathJax = {
+    tex: { inlineMath: [['\\(', '\\)']], displayMath: [['\\[', '\\]']] },
+    svg: { fontCache: 'global' }
+  };
+</script>
+<script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
+</head>
+<body>
+<div class="app">
+
+  <header class="topbar">
+    <div class="brand" aria-label="Pizza Cutting tool logo">
+      <svg width="30" height="30" viewBox="0 0 32 32" fill="none" aria-hidden="true">
+        <circle cx="16" cy="16" r="11" stroke="var(--c-a)" stroke-width="1.6"/>
+        <line x1="6" y1="9" x2="26" y2="23" stroke="var(--color-text)" stroke-width="1.3"/>
+        <line x1="6" y1="23" x2="26" y2="9" stroke="var(--c-b)" stroke-width="1.3"/>
+      </svg>
+      <div class="brand-text">
+        <span class="brand-title">Pizza Cutting</span>
+        <span class="brand-sub">Maximum pieces, live</span>
+      </div>
+    </div>
+
+    <div class="topbar-actions">
+      <a class="btn btn-ghost" href="../../">&larr; Dr Phil's Math Blog</a>
+      <button class="btn btn-ghost" id="resetBtn" type="button">Reset</button>
+      <button class="theme-toggle" id="themeToggle" type="button" aria-label="Switch theme">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <main class="layout">
+
+    <section class="stage-wrap">
+      <svg id="stage" viewBox="0 0 640 640" aria-label="Diagram of a circle divided into pieces by straight cuts">
+        <g id="diagramLayer"></g>
+      </svg>
+    </section>
+
+    <aside class="panel">
+
+      <div class="panel-section">
+        <h2 class="panel-title">Cuts</h2>
+
+        <div class="field">
+          <label for="cutsSlider">Number of straight cuts <span class="unit">n</span> <span class="live-val" id="cutsLiveVal">4</span></label>
+          <input type="range" id="cutsSlider" min="0" max="6" step="1" value="4" />
+        </div>
+      </div>
+
+      <div class="panel-section">
+        <h2 class="panel-title">Solved count</h2>
+
+        <div class="readout">
+          <div class="readout-row highlight">
+            <span class="pair-label">Maximum pieces p(n)</span>
+            <span class="coord" id="pieceReadout">11</span>
+          </div>
+          <div class="readout-row">
+            <span class="pair-label">Formula</span>
+            <span class="coord" id="formulaReadout" style="font-size:0.72rem;">p(4) = 4(4+1)/2 + 1 = 11</span>
+          </div>
+          <div class="readout-row">
+            <span class="pair-label">Gain from last cut</span>
+            <span class="coord" id="diffReadout">p(4) − p(3) = 4</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel-section panel-note">
+        <h2 class="panel-title">Reading the diagram</h2>
+        <p>
+          Each straight line is one full cut across the pizza. Drag the slider and every
+          new cut is drawn at a different angle and offset from the rest, so it crosses
+          all of the earlier cuts at its own distinct point &mdash; the arrangement that
+          produces the <strong>most</strong> pieces for that number of cuts. Numbers mark
+          each resulting region.
+        </p>
+      </div>
+
+    </aside>
+
+  </main>
+
+  <article class="writeup">
+    <div class="writeup-inner">
+
+      <p class="kicker">A First Mathematical Model</p>
+      <h1>Maximum Number of Pieces Produced by Straight Line Cuts</h1>
+      <p class="lede">What is the maximum number of pieces a circle, or pizza, can be divided into using n straight line cuts? A short derivation of the classic "lazy caterer's" formula, from first principles.</p>
+
+      <h2>The question</h2>
+      <p>
+        What is the maximum number of pieces a circle, or pizza, can be divided into using
+        \(n\) straight line cuts?
+      </p>
+      <p>For example:</p>
+      <p>
+        \[
+        \begin{aligned}
+          0 &\text{ cuts } \Rightarrow 1 \text{ piece},\\
+          1 &\text{ cut } \Rightarrow 2 \text{ pieces},\\
+          2 &\text{ cuts } \Rightarrow 4 \text{ pieces},\\
+          3 &\text{ cuts } \Rightarrow 7 \text{ pieces},\\
+          4 &\text{ cuts } \Rightarrow 11 \text{ pieces}.
+        \end{aligned}
+        \]
+      </p>
+      <p>The natural question is: what is the formula for \(p(n)\), where \(p(n)\) denotes the maximum number of pieces produced by \(n\) straight cuts?</p>
+
+      <h2>Beginning the pattern</h2>
+      <p>If no cuts are made, there is exactly one piece: \(p(0) = 1\).</p>
+      <p>With one cut: \(p(1) = 2\).</p>
+      <p>With two cuts, the maximum occurs when the cuts intersect: \(p(2) = 4\).</p>
+      <p>With three cuts, each new cut should intersect all previous cuts, while avoiding passing through an existing intersection point. This gives \(p(3) = 7\).</p>
+      <p>With four cuts: \(p(4) = 11\).</p>
+      <p>A pattern emerges:</p>
+      <p>
+        \[
+        \begin{aligned}
+          p(1) - p(0) &= 1,\\
+          p(2) - p(1) &= 2,\\
+          p(3) - p(2) &= 3,\\
+          p(4) - p(3) &= 4.
+        \end{aligned}
+        \]
+      </p>
+      <p>Hence, \(p(n) - p(n-1) = n\). Summing these differences gives \(p(n) - p(0) = 1 + 2 + 3 + \cdots + n\). Since \(p(0) = 1\),</p>
+      <p>
+        \[
+        p(n) = 1 + \sum_{k=1}^{n} k.
+        \]
+      </p>
+      <p>Using the standard arithmetic series formula, \(1 + 2 + 3 + \cdots + n = \dfrac{n(n+1)}{2}\), we obtain</p>
+
+      <div class="result-box">
+        <p>
+          \[
+          p(n) = \frac{n(n+1)}{2} + 1 = \frac{n^2 + n + 2}{2}.
+          \]
+        </p>
+      </div>
+
+      <h2>Verification</h2>
+      <p>
+        \[
+        \begin{aligned}
+          p(0) &= 1,\\
+          p(1) &= 2,\\
+          p(2) &= 4,\\
+          p(3) &= 7,\\
+          p(4) &= 11,\\
+          p(20) &= 211.
+        \end{aligned}
+        \]
+      </p>
+      <p>Note that \(p(20) = 211\), not \(212\).</p>
+
+      <h2>Rigorous geometric argument</h2>
+      <p>It is clear that \(n\) straight cuts divide the circle into a maximum number of regions if:</p>
+      <p>
+        1. no two cuts are parallel, and<br />
+        2. no three cuts are concurrent, meaning no three cuts pass through the same point.
+      </p>
+      <p>Suppose that \(k\) cuts have already been drawn. Now draw the \((k+1)\)-st cut.</p>
+      <p>Because no two cuts are parallel, the new cut intersects each of the previous \(k\) cuts. Because no three cuts are concurrent, all of these intersection points are distinct.</p>
+      <p>Hence the new cut is divided into \(k+1\) separate parts. Each part passes through a different existing region of the circle, splitting that region into two pieces.</p>
+      <p>Therefore, the \((k+1)\)-st cut increases the total number of regions by exactly \(k+1\).</p>
+      <p>Starting from one region and repeatedly adding these increases gives</p>
+      <p>
+        \[
+        p(n) = 1 + 1 + 2 + 3 + \cdots + n.
+        \]
+      </p>
+      <p>Thus,</p>
+      <p>
+        \[
+        p(n) = 1 + \frac{n(n+1)}{2}.
+        \]
+      </p>
+
+      <h2>Conclusion</h2>
+      <p>The maximum number of regions produced by \(n\) straight cuts is</p>
+      <div class="result-box">
+        <p>
+          \[
+          p(n) = \frac{n(n+1)}{2} + 1 = \frac{n^2 + n + 2}{2}.
+          \]
+        </p>
+      </div>
+      <p>This maximum is achieved when:</p>
+      <p>
+        &bull; no two cuts are parallel, and<br />
+        &bull; no three cuts pass through the same point.
+      </p>
+
+      <h2>Generalisation challenge</h2>
+      <p>
+        A natural follow-up question is whether the cutting process can be optimised so
+        that every piece has the same area, so each recipient gets an identical amount of
+        pizza. It turns out this is a genuinely hard problem: the arrangement of cuts that
+        maximises piece <em>count</em> is nothing like the arrangement needed for equal
+        <em>area</em>, and solving for exact equal-area partitions with straight cuts
+        quickly runs into cases with no clean closed-form answer. I am leaving this one as
+        an open question rather than forcing a complicated answer into what is meant to be
+        a simple, clean result.
+      </p>
+
+      <p class="attribution">Try it yourself: drag the slider above and watch \(p(n)\) update to match the count of pieces drawn.</p>
+
+    </div>
+  </article>
+
+</div>
+
+<script src="js/pieces.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
