@@ -318,16 +318,42 @@
   }
 
   function drawTangentPair(c1, r1, c2, r2, extCenter, color) {
-    // draw the two external common tangent lines from extCenter, tangent to circle 1
+    // Draw the two actual external common tangent segments for this pair:
+    // each tangent line touches circle 1 at one point and circle 2 at
+    // another, passing exactly through their exsimilicenter (extCenter).
     if (!extCenter) return;
-    const d = Geometry.dist(extCenter, c1);
-    if (d < r1 + 1e-6) return; // point inside circle, no tangent
-    const angleToCenter = Math.atan2(c1.y - extCenter.y, c1.x - extCenter.x);
-    const theta = Math.asin(Math.min(1, r1 / d));
-    [1, -1].forEach((sign) => {
-      const angle = angleToCenter + sign * theta;
-      const dir = { x: Math.cos(angle), y: Math.sin(angle) };
-      drawArrowLineThroughStage(extCenter, dir, withAlpha(color, 0.35), 1.3, [5, 5]);
+    const d1 = Geometry.dist(extCenter, c1);
+    const d2 = Geometry.dist(extCenter, c2);
+    if (d1 < r1 - 1e-6 || d2 < r2 - 1e-6) return; // degenerate
+
+    const t1 = Geometry.tangentPointsFromExternalPoint(extCenter, c1, r1);
+    const t2 = Geometry.tangentPointsFromExternalPoint(extCenter, c2, r2);
+    if (t1.length < 2 || t2.length < 2) return;
+
+    // Pair up tangent points: for each of the two tangent lines, the point
+    // on circle 1 and the point on circle 2 lie on the same ray from
+    // extCenter (same angular sign relative to the center-to-center line).
+    [0, 1].forEach((idx) => {
+      const pA = t1[idx];
+      const pB = t2[idx];
+      ctx.save();
+      ctx.strokeStyle = color;
+      ctx.lineWidth = 1.75;
+      ctx.beginPath();
+      ctx.moveTo(pA.x, pA.y);
+      ctx.lineTo(pB.x, pB.y);
+      ctx.stroke();
+      ctx.restore();
+
+      // small tangent-point markers where the line touches each circle
+      [pA, pB].forEach((pt) => {
+        ctx.save();
+        ctx.beginPath();
+        ctx.arc(pt.x, pt.y, 2.5, 0, Math.PI * 2);
+        ctx.fillStyle = color;
+        ctx.fill();
+        ctx.restore();
+      });
     });
   }
 
@@ -352,10 +378,14 @@
 
     fittedLine = Geometry.fitLine(ext);
 
-    // optional tangent lines
+    // external common tangent lines — the self-descriptive construction
+    // behind Monge's theorem: each pair's two tangent lines cross exactly
+    // at that pair's exsimilicenter, and the three crossing points are
+    // the collinear points the axis passes through.
     if (toggleTangents.checked) {
+      const pairColors = [getCSSVar('--pair-ab'), getCSSVar('--pair-bc'), getCSSVar('--pair-ac')];
       PAIRS.forEach(([i, j], k) => {
-        drawTangentPair(circles[i].c, circles[i].r, circles[j].c, circles[j].r, ext[k], getCSSVar('--ext-color'));
+        drawTangentPair(circles[i].c, circles[i].r, circles[j].c, circles[j].r, ext[k], pairColors[k]);
       });
     }
 

@@ -95,5 +95,30 @@ const Geometry = (() => {
     return Math.hypot(a.x - b.x, a.y - b.y);
   }
 
-  return { externalCenter, internalCenter, fitLine, dist };
+  /**
+   * Correct tangent-point computation from external point p to circle (c, r).
+   * The tangent length is L = sqrt(d^2 - r^2). The tangent point T satisfies
+   * |T - c| = r and (T - p) . (T - c) = 0. Using the standard construction:
+   * rotate the vector (c - p) by angle alpha = asin(r/d) in both directions,
+   * scale to length L, and add to p.
+   */
+  function tangentPointsFromExternalPoint(p, c, r) {
+    const dx = c.x - p.x;
+    const dy = c.y - p.y;
+    const d = Math.hypot(dx, dy);
+    if (d < r - 1e-9) return []; // p strictly inside circle
+    const dSafe = Math.max(d, r + 1e-9);
+    const L = Math.sqrt(Math.max(0, dSafe * dSafe - r * r)); // tangent length
+    const alpha = Math.asin(Math.min(1, r / dSafe)); // half-angle at p
+    const baseAngle = Math.atan2(dy, dx);
+    return [1, -1].map((sign) => {
+      const angle = baseAngle + sign * alpha;
+      return {
+        x: p.x + L * Math.cos(angle),
+        y: p.y + L * Math.sin(angle),
+      };
+    });
+  }
+
+  return { externalCenter, internalCenter, fitLine, dist, tangentPointsFromExternalPoint };
 })();

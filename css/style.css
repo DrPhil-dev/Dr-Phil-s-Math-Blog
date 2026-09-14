@@ -24,6 +24,9 @@
   --line-color: #10171c;
   --ext-color: #c8562f;
   --int-color: #3a7ecf;
+  --pair-ab: #c8562f;
+  --pair-bc: #3a7ecf;
+  --pair-ac: #1f9e6d;
 
   --shadow-sm: 0 1px 2px oklch(0.2 0.01 210 / 0.08);
   --shadow-md: 0 4px 16px oklch(0.2 0.01 210 / 0.10);
@@ -69,6 +72,9 @@
   --line-color: #f2f4f6;
   --ext-color: #ef8452;
   --int-color: #6fb1f2;
+  --pair-ab: #ef8452;
+  --pair-bc: #6fb1f2;
+  --pair-ac: #4fd39a;
 
   --shadow-sm: 0 1px 2px oklch(0 0 0 / 0.3);
   --shadow-md: 0 4px 16px oklch(0 0 0 / 0.35);
@@ -101,6 +107,9 @@
     --line-color: #f2f4f6;
     --ext-color: #ef8452;
     --int-color: #6fb1f2;
+    --pair-ab: #ef8452;
+    --pair-bc: #6fb1f2;
+    --pair-ac: #4fd39a;
     --grid-line: oklch(1 0 0 / 0.045);
     --grid-line-strong: oklch(1 0 0 / 0.09);
     color-scheme: dark;
@@ -298,6 +307,38 @@
 }
 .dot-int {
   background: var(--int-color);
+}
+.dot-pair-ab {
+  background: var(--pair-ab);
+  border-radius: 2px;
+  width: 12px;
+  height: 2px;
+}
+.dot-pair-bc {
+  background: var(--pair-bc);
+  border-radius: 2px;
+  width: 12px;
+  height: 2px;
+}
+.dot-pair-ac {
+  background: var(--pair-ac);
+  border-radius: 2px;
+  width: 12px;
+  height: 2px;
+}
+.legend-divider {
+  width: 12px;
+  height: 1px;
+  background: transparent;
+}
+#legendTangentHeader {
+  margin-top: 0.15rem;
+  padding-top: 0.35rem;
+  border-top: 1px solid var(--color-divider);
+  color: var(--color-text-faint);
+  text-transform: uppercase;
+  font-size: 0.62rem;
+  letter-spacing: 0.04em;
 }
 
 /* ---------- side panel ---------- */
