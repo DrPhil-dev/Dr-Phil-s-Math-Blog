@@ -1,0 +1,179 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>The St. Petersburg Paradox: A Coin Game With Infinite Expected Value</title>
+<meta name="description" content="Flip a coin, double the pot on every tail, and watch the running average payout climb without settling down. An interactive look at why this simple coin game has an infinite expected value." />
+
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://api.fontshare.com/v2/css?f[]=jetbrains-mono@400,500,700&display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400..700&display=swap" rel="stylesheet" />
+
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%230b0f14'/%3E%3Ccircle cx='16' cy='16' r='10' fill='none' stroke='%2358d3c9' stroke-width='1.8'/%3E%3Cpath d='M11 16 h10 M16 11 v10' stroke='%23e3a548' stroke-width='1.6'/%3E%3C/svg%3E" />
+
+<link rel="stylesheet" href="css/base.css" />
+<link rel="stylesheet" href="css/theme.css" />
+<link rel="stylesheet" href="css/style.css" />
+
+<script>
+  window.MathJax = {
+    tex: { inlineMath: [['\\(', '\\)']], displayMath: [['\\[', '\\]']] },
+    svg: { fontCache: 'global' },
+    startup: {
+      pageReady() {
+        return MathJax.startup.defaultPageReady().then(() => {
+          const fixBaselines = () => {
+            document.querySelectorAll('.writeup mjx-container:not([display="true"])').forEach((c) => {
+              const svg = c.querySelector('svg');
+              if (!svg) return;
+              const match = (svg.getAttribute('style') || '').match(/vertical-align:\s*(-?[\d.]+)(ex|px)/);
+              if (match) c.style.verticalAlign = match[1] + match[2];
+            });
+          };
+          fixBaselines();
+          new MutationObserver(fixBaselines).observe(document.body, { childList: true, subtree: true });
+        });
+      }
+    }
+  };
+</script>
+<script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
+</head>
+<body>
+<div class="app">
+
+  <header class="topbar">
+    <div class="brand" aria-label="St. Petersburg Paradox tool logo">
+      <svg width="30" height="30" viewBox="0 0 32 32" fill="none" aria-hidden="true">
+        <circle cx="16" cy="16" r="10" fill="none" stroke="var(--c-a)" stroke-width="1.8"/>
+        <path d="M11 16 h10 M16 11 v10" stroke="var(--c-b)" stroke-width="1.6"/>
+      </svg>
+      <div class="brand-text">
+        <span class="brand-title">St. Petersburg Paradox</span>
+        <span class="brand-sub">A coin game with infinite expected value</span>
+      </div>
+    </div>
+
+    <div class="topbar-actions">
+      <a class="btn btn-ghost" href="../../">&larr; Dr Phil's Math Blog</a>
+      <button class="theme-toggle" id="themeToggle" type="button" aria-label="Switch theme">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <main class="layout">
+
+    <section class="stage-wrap">
+      <div class="game-area">
+
+        <div class="pot-display">
+          <span class="pot-label">Current pot</span>
+          <span class="pot-value" id="potValue">$1</span>
+          <span class="pot-status" id="potStatus">Flip the coin to begin</span>
+        </div>
+
+        <div class="coin-row">
+          <div class="coin" id="coin" aria-hidden="true">
+            <div class="coin-face coin-front">H</div>
+            <div class="coin-face coin-back">T</div>
+          </div>
+          <div class="game-controls">
+            <button class="btn btn-primary" id="flipBtn" type="button">Flip coin</button>
+            <button class="btn btn-ghost" id="newGameBtn" type="button">New game</button>
+          </div>
+        </div>
+
+        <div class="flip-history" id="flipHistory" aria-live="polite"></div>
+
+        <div class="chart-wrap">
+          <div class="chart-title">
+            <span>Running average payout across simulated games</span>
+            <span class="chart-count" id="chartCount">0 games played</span>
+          </div>
+          <svg id="avgChart" viewBox="0 0 640 220" aria-label="Line chart of the running average payout across simulated games, which climbs without settling down">
+            <g id="chartLayer"></g>
+          </svg>
+        </div>
+
+      </div>
+    </section>
+
+    <aside class="panel">
+
+      <div class="panel-section">
+        <h2 class="panel-title">Run many games</h2>
+        <div class="field">
+          <label for="batchSize">Games per batch <span class="live-val" id="batchLiveVal">200</span></label>
+          <input type="range" id="batchSize" min="10" max="2000" step="10" value="200" />
+          <div class="n-scale-note"><span>10</span><span>2000</span></div>
+        </div>
+        <button class="btn btn-primary btn-block" id="runBatchBtn" type="button">Run batch</button>
+        <button class="btn btn-ghost btn-block" id="resetBtn" type="button">Reset all games</button>
+      </div>
+
+      <div class="panel-section">
+        <h2 class="panel-title">Results so far</h2>
+        <div class="readout">
+          <div class="readout-row">
+            <span class="pair-label">Games played</span>
+            <span class="coord" id="outGames">0</span>
+          </div>
+          <div class="readout-row">
+            <span class="pair-label">Total winnings</span>
+            <span class="coord" id="outTotal">$0</span>
+          </div>
+          <div class="readout-row highlight">
+            <span class="pair-label">Average payout per game</span>
+            <span class="coord" id="outAvg">&mdash;</span>
+          </div>
+          <div class="readout-row">
+            <span class="pair-label">Largest single payout</span>
+            <span class="coord" id="outMax">&mdash;</span>
+          </div>
+          <div class="readout-row">
+            <span class="pair-label">Longest run of tails</span>
+            <span class="coord" id="outLongest">&mdash;</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel-section panel-note">
+        <h2 class="panel-title">Reading the chart</h2>
+        <p>Every game pays out \(2^k\) dollars, where \(k\) is the number of flips until the first heads. Most games end quickly for a small prize, but the rare long run of tails pays out enormously, enough to keep dragging the running average upward no matter how many games you simulate. Run a few batches and watch it climb rather than settle onto a fixed number.</p>
+      </div>
+
+    </aside>
+  </main>
+
+  <article class="writeup">
+    <div class="writeup-inner">
+
+      <p class="kicker">A paradox in expected value</p>
+      <h1>The St. Petersburg Paradox</h1>
+      <p class="lede">A simple coin-flipping game, first discussed by <strong>Daniel Bernoulli</strong> in 1738, turns out to have an infinite expected value, yet almost nobody would pay more than a few dollars to play it. Working through the arithmetic shows why the two facts are not actually in conflict.</p>
+
+      <h2>The game</h2>
+      <p>You start with \(\$1\) in the pot. Flip a coin. Heads, you take the pot and the game ends. Tails, the pot doubles and you flip again. The question is: how much should you be willing to pay to play this game once?</p>
+
+      <h2>Computing the expected value</h2>
+      <p>The probability that the game ends on exactly the \(n\)-th flip (that is, \(n-1\) tails followed by one heads) is \(\dfrac{1}{2^n}\), and the pot at that point is \(2^{\,n-1}\) dollars. So the expected value is the sum</p>
+      <p>\[ \text{EV} = \sum_{n=1}^{\infty} \frac{1}{2^n} \times 2^{\,n-1} = \sum_{n=1}^{\infty} \frac{1}{2} = \frac{1}{2} + \frac{1}{2} + \frac{1}{2} + \cdots \]</p>
+      <p>Every single term in that sum equals \(\tfrac{1}{2}\), and there are infinitely many of them, so the sum diverges. The expected value of this game is, formally, infinite.</p>
+
+      <h2>Why that feels wrong</h2>
+      <p>An infinite expected value would normally mean you should pay any amount, however large, for the chance to play. Almost everyone, though, would only offer a few dollars, since the huge payouts are vanishingly rare: a run of 20 straight tails, needed to win over a million dollars, happens only about once in a million games. The paradox is not a contradiction in the mathematics, the sum really does diverge, but a mismatch between expected value and how people actually weigh risk and reward. It is one of the classic motivating examples behind expected utility theory, where large sums of money are worth progressively less to a person the more of them they already have, which tames the sum into something finite and much more reasonable.</p>
+
+      <h2>A little history</h2>
+      <p>The paradox was first posed by <strong>Nicolaus Bernoulli</strong>, a member of a large and remarkable family of Swiss mathematicians, in a 1713 letter to Pierre Rémond de Montmort discussing games of chance (<a href="https://plato.stanford.edu/entries/paradox-stpetersburg/" target="_blank" rel="noopener">Stanford Encyclopedia of Philosophy</a>). His cousin, <strong>Daniel Bernoulli</strong>, took up the problem and, around 1731, worked out the resolution described above, that people value money on a diminishing, roughly logarithmic scale rather than a straight linear one, which became one of the earliest statements of what is now called utility theory. Daniel spent about eight years, from 1725 to 1733, as a professor at the newly founded Imperial Academy of Sciences in Saint Petersburg (<a href="https://mathshistory.st-andrews.ac.uk/Biographies/Bernoulli_Daniel/" target="_blank" rel="noopener">MacTutor</a>), and his paper on the problem was eventually published there in 1738, in the Academy's journal <em>Commentarii Academiae Scientiarum Imperialis Petropolitanae</em>, which is where the paradox gets its name (<a href="https://en.wikipedia.org/wiki/St._Petersburg_paradox" target="_blank" rel="noopener">Wikipedia</a>). His proposed resolution remains a foundational idea in economics and decision theory to this day.</p>
+
+    </div>
+  </article>
+
+</div>
+
+<script src="js/app.js"></script>
+</body>
+</html>
