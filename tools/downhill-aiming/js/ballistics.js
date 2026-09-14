@@ -78,3 +78,39 @@ function trajectoryPoints(R_m, thetaRad, v_ms, g_ms2, samples = 60) {
 function horizontalRuleRange(D_m, alphaDeg) {
   return D_m * Math.cos(toRad(alphaDeg));
 }
+
+/**
+ * The horizontal-distance rule of thumb: dial in the flat-ground zero
+ * elevation for range R_rule = D cos(alpha), then fire that same elevation
+ * along the line-of-sight direction alpha instead of correcting further.
+ * Returns the small zero-elevation angle thetaZeroDeg (solved from a flat
+ * shot landing back on y=0 at range R_rule) and the resulting actual launch
+ * angle actualThetaDeg = alpha + thetaZeroDeg used when firing.
+ */
+function ruleOfThumbLaunch(D_m, alphaDeg, v_ms, g_ms2 = G_MS2) {
+  const alpha = toRad(alphaDeg);
+  const R_rule = D_m * Math.cos(alpha);
+
+  if (R_rule <= 1e-9) {
+    return { R_rule, valid: false, thetaZeroDeg: null, actualThetaDeg: null };
+  }
+
+  // Flat shot (H = 0) landing at range R_rule:
+  // 0 = R tan(t) + g R^2 / (2 v^2 cos^2 t)
+  // => (g R^2 / (2v^2)) tan^2(t) - R tan(t) + (g R^2 / (2v^2)) = 0
+  const a = (g_ms2 * R_rule ** 2) / (2 * v_ms ** 2);
+  const b = -R_rule;
+  const c = (g_ms2 * R_rule ** 2) / (2 * v_ms ** 2);
+  const disc = b ** 2 - 4 * a * c;
+
+  if (disc < 0 || a === 0) {
+    return { R_rule, valid: false, thetaZeroDeg: null, actualThetaDeg: null };
+  }
+
+  const tanThetaZero = (-b - Math.sqrt(disc)) / (2 * a);
+  const thetaZero = Math.atan(tanThetaZero);
+  const thetaZeroDeg = toDeg(thetaZero);
+  const actualThetaDeg = alphaDeg + thetaZeroDeg;
+
+  return { R_rule, valid: true, thetaZeroDeg, actualThetaDeg };
+}

@@ -95,12 +95,12 @@
     const vb = svg.viewBox.baseVal;
     const W = vb.width, H = vb.height;
     const pad = 56;
-    const rightMargin = 130; // reserve room for the target/H labels
+    const wallMargin = 96; // reserve room for the vertical target wall + its labels
     const ox = pad, oy = pad * 0.9;
 
     // scale so the full line-of-sight triangle fits comfortably
     const alpha = toRad(alphaDeg);
-    const maxRun = W - pad - rightMargin;
+    const maxRun = W - pad - wallMargin;
     const maxDrop = H - pad * 2.0;
     // use unit line-of-sight length 1 and scale by D visually (not physically, D is just for angle/label context)
     const drawLen = Math.min(maxRun / Math.cos(alpha), maxDrop / Math.max(Math.sin(alpha), 0.05));
@@ -110,39 +110,48 @@
     const shooter = [ox, oy];
     const target = [ox + Rpx, oy + Hpx];
     const rightAngle = [ox + Rpx, oy];
+    const wallX = ox + Rpx; // the wall stands at the target's horizontal distance
 
     // grid handled by CSS background on .stage-wrap
 
     // axes
-    const axisX = svgEl('line', { x1: ox, y1: oy, x2: ox + maxRun + 20, y2: oy, class: 'axis-line' });
+    const axisX = svgEl('line', { x1: ox, y1: oy, x2: wallX + 46, y2: oy, class: 'axis-line' });
     const axisY = svgEl('line', { x1: ox, y1: oy, x2: ox, y2: oy + maxDrop + 20, class: 'axis-line' });
     layer.appendChild(axisX);
     layer.appendChild(axisY);
-    const axisXLabel = svgEl('text', { x: ox + maxRun + 24, y: oy + 4, class: 'axis-label' });
-    axisXLabel.textContent = 'x';
-    layer.appendChild(axisXLabel);
     const axisYLabel = svgEl('text', { x: ox - 4, y: oy + maxDrop + 30, class: 'axis-label' });
     axisYLabel.textContent = 'y';
     layer.appendChild(axisYLabel);
 
-    // line of sight (shooter -> target)
-    const los = svgEl('line', {
-      x1: shooter[0], y1: shooter[1], x2: target[0], y2: target[1], class: 'line-los',
-    });
-    layer.appendChild(los);
+    // the target wall: a vertical line standing at the target's horizontal
+    // distance, tall enough to comfortably show where each method lands.
+    const wallTop = Math.min(oy - 30, target[1] - 70);
+    const wallBottom = Math.max(oy + maxDrop, target[1] + 70);
+    layer.appendChild(svgEl('line', { x1: wallX, y1: wallTop, x2: wallX, y2: wallBottom, class: 'target-wall' }));
+    const wallLabel = svgEl('text', { x: wallX, y: wallTop - 10, class: 'dim-label', 'text-anchor': 'middle' });
+    wallLabel.textContent = 'target wall';
+    layer.appendChild(wallLabel);
 
     // dashed vertical/horizontal component guides
     layer.appendChild(svgEl('line', {
       x1: target[0], y1: target[1], x2: rightAngle[0], y2: rightAngle[1], class: 'guide-dashed',
     }));
 
-    // aimed bore direction + ideal trajectory, only if a solution exists.
-    // The true gap beta = alpha - theta is often well under a degree, which
-    // would draw the bore line and trajectory right on top of the line of
-    // sight. So the diagram exaggerates that angular gap by VISUAL_GAP_GAIN
-    // for legibility only. Every number in the panel is still the exact,
-    // un-exaggerated result.
+    // line of sight (shooter -> target), one of the three lines converging
+    // on the wall alongside the two fired trajectories below.
+    const los = svgEl('line', {
+      x1: shooter[0], y1: shooter[1], x2: target[0], y2: target[1], class: 'line-los',
+    });
+    layer.appendChild(los);
+
+    // aimed bore direction + both trajectories, only if a solution exists.
+    // The true angular gaps here (beta for the exact model, and the rule's
+    // own tiny zero-elevation) are often well under a degree, which would
+    // draw every line right on top of the line of sight. So the diagram
+    // exaggerates each angular gap by VISUAL_GAP_GAIN for legibility only.
+    // Every number in the panel is still the exact, un-exaggerated result.
     if (result.valid) {
+      const state = getState();
       const theta = toRad(result.thetaDeg);
       const displayThetaDeg = alphaDeg - (alphaDeg - result.thetaDeg) * VISUAL_GAP_GAIN;
       const displayTheta = toRad(displayThetaDeg);
@@ -152,27 +161,34 @@
         x1: shooter[0], y1: shooter[1], x2: boreEnd[0], y2: boreEnd[1], class: 'line-bore',
       }));
 
-      // ideal trajectory curve: compute the true physical shape at theta,
-      // then rotate every sampled point by the same exaggerated angular
-      // offset (displayTheta - theta) about the shooter so the curve still
-      // meets the (exaggerated) bore line at the muzzle and visibly bows
-      // away from the line of sight, without changing its shape.
-      const state = getState();
+      // Both trajectories are drawn on their true physical shape, scaled to
+      // fit, so they land exactly on the target point on the wall. Separation
+      // near the shooter comes from a perpendicular offset that peaks at the
+      // muzzle (for legibility, matching the exaggerated bore/theta angle)
+      // and eases to exactly zero by the wall, so both curves visibly diverge
+      // from the line of sight at launch, then converge back to land next to
+      // the true target, exactly like the three lines never actually meeting
+      // an inch apart on a real target. Every panel number stays exact.
       const R_m = result.R_m;
-      const pts = trajectoryPoints(R_m, theta, state.v, state.g, 48);
       const sx = R_m > 0 ? Rpx / R_m : 1;
-      const gapRad = displayTheta - theta;
-      const cosGap = Math.cos(gapRad), sinGap = Math.sin(gapRad);
-      let d = '';
-      pts.forEach(([x, y], i) => {
-        const lx = x * sx, ly = y * sx; // local coords, uniform scale to preserve shape
-        const rx = lx * cosGap - ly * sinGap;
-        const ry = lx * sinGap + ly * cosGap;
-        const px = shooter[0] + rx;
-        const py = shooter[1] + ry;
-        d += (i === 0 ? 'M' : 'L') + px.toFixed(2) + ',' + py.toFixed(2) + ' ';
-      });
-      layer.appendChild(svgEl('path', { d, class: 'path-trajectory' }));
+      const peakOffsetPx = 26; // fixed visual amplitude, independent of the true (tiny) angle
+
+      const exactPath = tracePathToWall(shooter, wallX, theta, state.v, state.g, sx, +peakOffsetPx);
+      layer.appendChild(svgEl('path', { d: exactPath.d, class: 'path-trajectory' }));
+      layer.appendChild(svgEl('circle', { cx: exactPath.end[0], cy: exactPath.end[1], r: 4.5, class: 'pt-exact' }));
+
+      // rule-of-thumb trajectory: dial the flat-ground zero elevation for
+      // R_rule = D cos(alpha), then fire that elevation along the line-of-
+      // sight direction alpha instead of correcting further. This slightly
+      // overshoots the true target in reality; the diagram exaggerates that
+      // real but tiny miss with the same tapered offset, on the other side.
+      const rule = ruleOfThumbLaunch(D, alphaDeg, state.v, state.g);
+      if (rule.valid) {
+        const ruleTheta = toRad(rule.actualThetaDeg);
+        const rulePath = tracePathToWall(shooter, wallX, ruleTheta, state.v, state.g, sx, -peakOffsetPx);
+        layer.appendChild(svgEl('path', { d: rulePath.d, class: 'path-rule' }));
+        layer.appendChild(svgEl('circle', { cx: rulePath.end[0], cy: rulePath.end[1], r: 4.5, class: 'pt-rule' }));
+      }
 
       // theta arc: small radius, hugging the bore line closely so it
       // reads as its own ring distinct from alpha's.
@@ -193,22 +209,31 @@
 
     // points
     layer.appendChild(svgEl('circle', { cx: shooter[0], cy: shooter[1], r: 4.5, class: 'pt-shooter' }));
-    layer.appendChild(svgEl('circle', { cx: target[0], cy: target[1], r: 4.5, class: 'pt-target' }));
+    layer.appendChild(svgEl('circle', { cx: target[0], cy: target[1], r: 5.5, class: 'pt-target' }));
 
     const shooterLabel = svgEl('text', { x: shooter[0] - 8, y: shooter[1] - 12, class: 'pt-label', 'text-anchor': 'end' });
     shooterLabel.textContent = 'shooter';
     layer.appendChild(shooterLabel);
 
-    const targetLabelX = Math.min(target[0] + 8, W - 8);
-    const targetLabelAnchor = target[0] + 90 > W ? 'end' : 'start';
-    const targetLabel = svgEl('text', {
-      x: targetLabelAnchor === 'end' ? target[0] - 8 : targetLabelX,
-      y: target[1] + 4,
-      class: 'pt-label',
-      'text-anchor': targetLabelAnchor,
-    });
+    const targetLabel = svgEl('text', { x: target[0] - 10, y: target[1] - 10, class: 'pt-label', 'text-anchor': 'end' });
     targetLabel.textContent = 'target (R, H)';
     layer.appendChild(targetLabel);
+
+    // legend, placed clear of the wall in the lower right
+    const legendItems = [
+      { cls: 'legend-los', text: 'line of sight' },
+      { cls: 'legend-exact', text: 'exact trajectory' },
+      { cls: 'legend-rule', text: 'rule-of-thumb trajectory' },
+    ];
+    const legendX = wallX + 14;
+    const legendYStart = wallBottom - 54;
+    legendItems.forEach((item, i) => {
+      const ly = legendYStart + i * 18;
+      layer.appendChild(svgEl('line', { x1: legendX, y1: ly, x2: legendX + 20, y2: ly, class: item.cls }));
+      const t = svgEl('text', { x: legendX + 26, y: ly + 4, class: 'legend-label' });
+      t.textContent = item.text;
+      layer.appendChild(t);
+    });
 
     // R and H dimension labels
     const rLabel = svgEl('text', { x: (shooter[0] + rightAngle[0]) / 2, y: oy + maxDrop + 46, class: 'dim-label', 'text-anchor': 'middle' });
@@ -216,10 +241,10 @@
     layer.appendChild(rLabel);
 
     const hLabelY = (rightAngle[1] + target[1]) / 2;
-    const hLabelLine1 = svgEl('text', { x: ox + maxRun + 14, y: hLabelY - 7, class: 'dim-label', 'text-anchor': 'start' });
+    const hLabelLine1 = svgEl('text', { x: ox - 4, y: hLabelY - 7, class: 'dim-label', 'text-anchor': 'end' });
     hLabelLine1.textContent = 'H = D sin \u03B1';
     layer.appendChild(hLabelLine1);
-    const hLabelLine2 = svgEl('text', { x: ox + maxRun + 14, y: hLabelY + 9, class: 'dim-label', 'text-anchor': 'start' });
+    const hLabelLine2 = svgEl('text', { x: ox - 4, y: hLabelY + 9, class: 'dim-label', 'text-anchor': 'end' });
     hLabelLine2.textContent = '\u2248 ' + fmt(result.H_m, 1) + ' m';
     layer.appendChild(hLabelLine2);
 
@@ -230,9 +255,58 @@
       layer.appendChild(betaLabel);
 
       const gapNote = svgEl('text', { x: ox + 90, y: oy - 10, class: 'gap-note' });
-      gapNote.textContent = '(angular gap between \u03B1, \u03B8 shown ' + VISUAL_GAP_GAIN + '\u00D7 wider than actual, for visibility)';
+      gapNote.textContent = '(angular gaps between the three lines shown ' + VISUAL_GAP_GAIN + '\u00D7 wider than actual, for visibility)';
       layer.appendChild(gapNote);
     }
+  }
+
+  // Trace a fired trajectory (launch angle thetaRad, speed v, gravity g)
+  // from the shooter out to the vertical wall at wallX, in *display*
+  // coordinates. The real physical shape is computed in metres, uniformly
+  // scaled by sx (px per metre along the line-of-sight direction), then
+  // rotated about the shooter by gapRad, the same exaggerated angular
+  // offset used to draw that trajectory's own firing line. Returns the
+  // path string and the pixel point where it crosses the wall.
+  function tracePathToWall(shooter, wallX, thetaRad, v_ms, g_ms2, sx, peakOffsetPx) {
+    // True physical trajectory in display coordinates: same origin as the
+    // shooter, uniformly scaled (no rotation), so an unmodified curve lands
+    // exactly at the true target on the wall.
+    const toDisplay = (xm, ym) => [shooter[0] + xm * sx, shooter[1] + ym * sx];
+
+    // Perpendicular unit vector to the x-axis in this local frame is simply
+    // vertical (0,1) here since toDisplay has no rotation, so the offset is
+    // applied straight in the y-direction, eased from peakOffsetPx at the
+    // shooter down to 0 at the wall with a quadratic ease so it reads as a
+    // gentle bow rather than a kink.
+    const runPx = Math.max(wallX - shooter[0], 1e-6);
+
+    const samples = 72;
+    const stepM = sx > 0 ? runPx / sx / samples : 1;
+    let d = '';
+    let prev = null;
+    let end = null;
+    for (let i = 0; i <= samples * 3 && end === null; i++) {
+      const xm = i * stepM;
+      const t = xm / (v_ms * Math.cos(thetaRad));
+      const ym = v_ms * Math.sin(thetaRad) * t + 0.5 * g_ms2 * t * t;
+      let [px, py] = toDisplay(xm, ym);
+      const s = Math.min(Math.max((px - shooter[0]) / runPx, 0), 1);
+      const ease = (1 - s) * (1 - s);
+      py -= peakOffsetPx * ease;
+      d += (i === 0 ? 'M' : 'L') + px.toFixed(2) + ',' + py.toFixed(2) + ' ';
+      if (px >= wallX) {
+        end = interpToWall(prev, [px, py], wallX);
+      }
+      prev = [px, py];
+    }
+    if (end === null) end = prev || shooter;
+    return { d, end };
+  }
+
+  function interpToWall(p0, p1, wallX) {
+    if (!p0) return p1;
+    const t = (wallX - p0[0]) / (p1[0] - p0[0] || 1);
+    return [wallX, p0[1] + t * (p1[1] - p0[1])];
   }
 
   function arcPath(center, radius, fromDeg, toDeg, cls) {

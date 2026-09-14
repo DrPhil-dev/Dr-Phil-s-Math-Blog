@@ -92,8 +92,8 @@ body {
 .layout {
   flex-shrink: 0;
   display: grid;
-  grid-template-columns: 1fr 340px;
-  min-height: min(72vh, 620px);
+  grid-template-columns: 1fr 270px;
+  min-height: min(78vh, 680px);
 }
 
 /* ---------- stage ---------- */
@@ -115,7 +115,7 @@ body {
 #stage {
   width: 100%;
   height: 100%;
-  max-width: 720px;
+  max-width: 980px;
   display: block;
 }
 
@@ -192,6 +192,41 @@ body {
   fill: var(--color-text-faint);
   font-size: 11px;
   font-style: italic;
+  font-family: var(--font-body);
+}
+
+.target-wall {
+  stroke: var(--color-text-faint);
+  stroke-width: 1.4;
+  stroke-dasharray: 2 3;
+}
+.path-rule {
+  stroke: var(--c-a);
+  stroke-width: 2;
+  fill: none;
+}
+.pt-exact {
+  fill: var(--c-b);
+}
+.pt-rule {
+  fill: var(--c-a);
+}
+.legend-los {
+  stroke: var(--color-text-muted);
+  stroke-width: 1.6;
+  stroke-dasharray: 6 5;
+}
+.legend-exact {
+  stroke: var(--c-b);
+  stroke-width: 2;
+}
+.legend-rule {
+  stroke: var(--c-a);
+  stroke-width: 2;
+}
+.legend-label {
+  fill: var(--color-text-muted);
+  font-size: 11px;
   font-family: var(--font-body);
 }
 
