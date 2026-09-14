@@ -1,7 +1,7 @@
 /* ---------- layout shell ---------- */
 
 .app {
-  height: 100dvh;
+  min-height: 100dvh;
   display: flex;
   flex-direction: column;
 }
@@ -112,9 +112,9 @@
 
 .layout {
   flex: 1;
+  min-height: 640px;
   display: grid;
   grid-template-columns: 1fr 320px;
-  min-height: 0;
 }
 
 /* ---------- stage ---------- */
@@ -482,5 +482,105 @@
   .topbar {
     flex-wrap: wrap;
     row-gap: 0.5rem;
+  }
+}
+
+.writeup {
+  border-top: 1px solid var(--color-divider);
+  background: var(--color-bg);
+  padding: 3.5rem 1.5rem 5rem;
+}
+
+.writeup-inner {
+  max-width: 700px;
+  margin: 0 auto;
+}
+
+.writeup .kicker {
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--color-primary);
+  margin-bottom: 0.6rem;
+}
+
+.writeup h1 {
+  font-family: var(--font-display);
+  font-size: clamp(1.8rem, 4vw, 2.6rem);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  margin-bottom: 0.9rem;
+}
+
+.writeup .lede {
+  font-size: 1.05rem;
+  color: var(--color-text-muted);
+  line-height: 1.6;
+  margin-bottom: 2.4rem;
+}
+
+.writeup h2 {
+  font-family: var(--font-display);
+  font-size: 1.3rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  margin: 2.6rem 0 1rem;
+  padding-top: 0.2rem;
+}
+
+.writeup p {
+  font-size: 0.98rem;
+  line-height: 1.75;
+  color: var(--color-text);
+  margin-bottom: 1.1rem;
+}
+
+.writeup em {
+  color: var(--color-text-muted);
+  font-style: italic;
+}
+
+.writeup strong {
+  font-weight: 700;
+}
+
+.writeup a {
+  color: var(--color-primary);
+  text-decoration: underline;
+  text-decoration-color: var(--color-primary-highlight);
+  text-underline-offset: 2px;
+}
+
+.writeup a:hover {
+  color: var(--color-primary-hover);
+}
+
+.placeholder-box {
+  background: var(--color-surface-2);
+  border: 1px dashed var(--color-border);
+  border-radius: var(--radius-md);
+  padding: 1.2rem 1.4rem;
+  margin: 1.6rem 0 2.4rem;
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+}
+
+.placeholder-box .placeholder-icon {
+  flex-shrink: 0;
+  color: var(--color-text-faint);
+}
+
+.placeholder-box p {
+  margin: 0;
+  font-size: 0.95rem;
+  color: var(--color-text-muted);
+  font-style: italic;
+}
+
+@media (max-width: 720px) {
+  .writeup {
+    padding: 2.5rem 1.25rem 3.5rem;
   }
 }
