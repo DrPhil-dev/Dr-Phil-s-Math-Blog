@@ -401,6 +401,7 @@ body {
 
 .writeup mjx-container:not([display="true"]) {
   display: inline-block;
+  vertical-align: -0.15ex;
 }
 
 .writeup em {
