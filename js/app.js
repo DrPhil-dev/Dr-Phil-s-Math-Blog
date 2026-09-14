@@ -317,10 +317,37 @@
     return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
   }
 
+  function extendPointToStage(from, through) {
+    // Ray starting at `from`, passing through `through`, extended to the
+    // canvas bounds — used to continue a tangent line past the near tangent
+    // point out to where it strikes the Monge line and beyond.
+    const dir = { x: through.x - from.x, y: through.y - from.y };
+    const len = Math.hypot(dir.x, dir.y);
+    if (len < 1e-9) return through;
+    const ux = dir.x / len,
+      uy = dir.y / len;
+    const candidates = [];
+    if (Math.abs(ux) > 1e-9) {
+      candidates.push((0 - from.x) / ux);
+      candidates.push((W - from.x) / ux);
+    }
+    if (Math.abs(uy) > 1e-9) {
+      candidates.push((0 - from.y) / uy);
+      candidates.push((H - from.y) / uy);
+    }
+    const forward = candidates.filter((t) => t > len);
+    if (forward.length === 0) return through;
+    const tEdge = Math.min(...forward);
+    return { x: from.x + ux * tEdge, y: from.y + uy * tEdge };
+  }
+
   function drawTangentPair(c1, r1, c2, r2, extCenter, color) {
-    // Draw the two actual external common tangent segments for this pair:
-    // each tangent line touches circle 1 at one point and circle 2 at
-    // another, passing exactly through their exsimilicenter (extCenter).
+    // Draw the two actual external common tangent lines for this pair:
+    // each touches circle 1 at one point and circle 2 at another, passing
+    // exactly through their exsimilicenter (extCenter). The solid segment
+    // spans the two tangency points; a faint dashed continuation extends
+    // past the near tangent point through the exsimilicenter to the stage
+    // edge, so you can see where the line actually strikes the Monge axis.
     if (!extCenter) return;
     const d1 = Geometry.dist(extCenter, c1);
     const d2 = Geometry.dist(extCenter, c2);
@@ -336,6 +363,26 @@
     [0, 1].forEach((idx) => {
       const pA = t1[idx];
       const pB = t2[idx];
+      // whichever tangent point sits closer to extCenter is the "near" end;
+      // extend the ray from there, through extCenter, to the stage edge.
+      const dA = Geometry.dist(extCenter, pA);
+      const dB = Geometry.dist(extCenter, pB);
+      const nearPt = dA < dB ? pA : pB;
+      const edgePt = extendPointToStage(nearPt, extCenter);
+
+      // faint dashed continuation from the near tangent point, through the
+      // exsimilicenter, out to the stage edge
+      ctx.save();
+      ctx.strokeStyle = withAlpha(color, 0.4);
+      ctx.lineWidth = 1.25;
+      ctx.setLineDash([5, 5]);
+      ctx.beginPath();
+      ctx.moveTo(nearPt.x, nearPt.y);
+      ctx.lineTo(edgePt.x, edgePt.y);
+      ctx.stroke();
+      ctx.restore();
+
+      // solid tangent segment between the two actual tangency points
       ctx.save();
       ctx.strokeStyle = color;
       ctx.lineWidth = 1.75;
