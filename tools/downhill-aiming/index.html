@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Downhill Aiming — A First Mathematical Model</title>
+<title>Downhill Aiming: A First Mathematical Model</title>
 <meta name="description" content="Why aiming downhill or uphill needs more than the horizontal-distance rule of thumb. An interactive derivation of the correct aim-angle correction from projectile motion, checked against a real rangefinder." />
 
 <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -66,8 +66,8 @@
         <h2 class="panel-title">Inputs</h2>
 
         <div class="field">
-          <label for="inputD">Line-of-sight distance D <span class="unit">(yd)</span> <span class="live-val" id="valD">400</span></label>
-          <input type="range" id="inputD" min="50" max="800" step="10" value="400" />
+          <label for="inputD">Line-of-sight distance D <span class="unit">(m)</span> <span class="live-val" id="valD">365</span></label>
+          <input type="range" id="inputD" min="50" max="730" step="5" value="365" />
         </div>
 
         <div class="field">
@@ -76,13 +76,13 @@
         </div>
 
         <div class="field">
-          <label for="inputV">Muzzle velocity v <span class="unit">(ft/s)</span> <span class="live-val" id="valV">3050</span></label>
-          <input type="range" id="inputV" min="1500" max="4200" step="10" value="3050" />
+          <label for="inputV">Muzzle velocity v <span class="unit">(m/s)</span> <span class="live-val" id="valV">930</span></label>
+          <input type="range" id="inputV" min="450" max="1300" step="5" value="930" />
         </div>
 
         <div class="field">
-          <label for="inputG">Gravity g <span class="unit">(ft/s&sup2;)</span> <span class="live-val" id="valG">32.174</span></label>
-          <input type="range" id="inputG" min="20" max="40" step="0.1" value="32.174" />
+          <label for="inputG">Gravity g <span class="unit">(m/s&sup2;)</span> <span class="live-val" id="valG">9.81</span></label>
+          <input type="range" id="inputG" min="6" max="12" step="0.01" value="9.81" />
         </div>
       </div>
 
@@ -91,11 +91,11 @@
         <div class="readout">
           <div class="readout-row">
             <span class="pair-label">Horizontal range R</span>
-            <span class="coord" id="outR">—</span><span class="coord-unit">yd</span>
+            <span class="coord" id="outR">—</span><span class="coord-unit">m</span>
           </div>
           <div class="readout-row">
             <span class="pair-label">Drop / rise H</span>
-            <span class="coord" id="outH">—</span><span class="coord-unit">yd</span>
+            <span class="coord" id="outH">—</span><span class="coord-unit">m</span>
           </div>
           <div class="readout-row">
             <span class="pair-label">Required launch angle &theta;</span>
@@ -110,7 +110,7 @@
 
       <div class="panel-section panel-note">
         <h2 class="panel-title">Reading the diagram</h2>
-        <p>The dashed line is the shooter's <strong>line of sight</strong> to the target, at angle &alpha; below (or above) horizontal. The solid ray is the <strong>aimed bore direction</strong> &theta;, and the curve traces the <strong>ideal vacuum trajectory</strong> the bullet actually follows under gravity alone. The gap between them, &beta;, is how far above the line of sight you need to hold.</p>
+        <p>The dashed line is the shooter's <strong>line of sight</strong> to the target, at angle &alpha; below (or above) horizontal. The solid ray is the <strong>aimed bore direction</strong> &theta;, and the curve traces the <strong>ideal vacuum trajectory</strong> the bullet actually follows under gravity alone. The gap between them, &beta;, is how far above the line of sight you need to hold. That gap is usually a small fraction of a degree, so the diagram exaggerates it to stay readable. The numbers in the panel are always exact.</p>
       </div>
 
     </aside>
@@ -146,7 +146,7 @@
       <p>Applying the quadratic formula and taking the physically relevant (lower, flatter-trajectory) root gives the required launch angle:</p>
       <p>\[ \tan\theta = \frac{\sqrt{v^4 - g^2R^2 + 2gv^2H} \; - \; v^2}{gR} \]</p>
       <p>The quantity under the square root must stay non-negative for a real solution to exist; if it goes negative, the target is beyond what the muzzle velocity can reach along that line of sight at all.</p>
-      <p>The hold correction — how far above (or below) the line of sight the shooter needs to aim — is simply the difference between the line-of-sight angle and the required launch angle:</p>
+      <p>The hold correction, how far above (or below) the line of sight the shooter needs to aim, is simply the difference between the line-of-sight angle and the required launch angle:</p>
       <div class="result-box">
         <p>\[ \beta \;=\; \alpha - \theta \;=\; \alpha - \arctan\!\left(\frac{\sqrt{v^4 - g^2R^2 + 2gv^2H} \, - \, v^2}{gR}\right) \]</p>
       </div>
@@ -154,23 +154,23 @@
 
       <h2>5. Checking it against a real rangefinder</h2>
       <p>The Leupold RX&#8209;1300i, a laser rangefinder with a "True Ballistic Range" (TBR) mode, computes its own slope-adjusted hold distance using a fuller exterior-ballistics model that includes drag. It is a good real-world check on how close the vacuum model gets.</p>
-      <p>Example: a .270 Winchester, 130-grain bullet at a muzzle velocity of 3050 ft/s, ranged at \(D = 400\) yd on a \(30°\) downhill slope.</p>
+      <p>Example: a .270 Winchester, 130-grain bullet at a muzzle velocity of 930 m/s, ranged at \(D = 366\) m on a \(30°\) downhill slope.</p>
 
       <table class="compare-table">
         <thead>
           <tr><th>Method</th><th>Equivalent hold range</th></tr>
         </thead>
         <tbody>
-          <tr><td>Horizontal-distance rule (\(D\cos\alpha\))</td><td>346.4 yd</td></tr>
-          <tr><td>Ideal vacuum trajectory (this model)</td><td>346.8 yd</td></tr>
-          <tr><td>Leupold RX-1300i TBR (drag included)</td><td>367.0 yd</td></tr>
+          <tr><td>Horizontal-distance rule (\(D\cos\alpha\))</td><td>316.7 m</td></tr>
+          <tr><td>Ideal vacuum trajectory (this model)</td><td>317.1 m</td></tr>
+          <tr><td>Leupold RX-1300i TBR (drag included)</td><td>335.6 m</td></tr>
         </tbody>
       </table>
 
-      <p>The vacuum model and the horizontal-distance rule agree with each other to within half a yard here, both landing well short of the drag-inclusive TBR figure. That gap between vacuum and TBR is exactly the air resistance the vacuum model leaves out, not an error in the geometry. The angle correction \(\beta\) derived above is the right shape of the fix; a full ballistic solver adds drag on top of it.</p>
+      <p>The vacuum model and the horizontal-distance rule agree with each other to within half a metre here, both landing well short of the drag-inclusive TBR figure. That gap between vacuum and TBR is exactly the air resistance the vacuum model leaves out, not an error in the geometry. The angle correction \(\beta\) derived above is the right shape of the fix; a full ballistic solver adds drag on top of it.</p>
 
       <h2>Try it yourself</h2>
-      <p>Use the interactive diagram above to change the distance, slope angle, and muzzle velocity, and watch \(\theta\) and \(\beta\) update along with the trajectory curve.</p>
+      <p>Use the interactive diagram above to change the distance, slope angle, and muzzle velocity, and watch \(\theta\) and \(\beta\) update along with the trajectory curve. The angle between the line of sight, the aimed bore direction, and the true trajectory is drawn wider than it really is so you can actually see three separate lines. The panel numbers are always the true, un-exaggerated values.</p>
 
       <p class="attribution">Reference: Leupold &amp; Stevens, RX-1300i rangefinder, "True Ballistic Range" mode.</p>
 

@@ -18,7 +18,14 @@
     themeToggle: document.getElementById('themeToggle'),
   };
 
-  const DEFAULTS = { D: 400, alpha: 30, v: 3050, g: 32.174 };
+  const DEFAULTS = { D: 365, alpha: 30, v: 930, g: 9.81 };
+
+  // The true hold correction beta is often a small fraction of a degree, so
+  // the line of sight, bore direction and trajectory would sit visually on
+  // top of one another. For legibility only, the diagram exaggerates the
+  // angular gap between alpha and theta by this factor; all numeric readouts
+  // stay exact. A clear note is drawn on the diagram saying so.
+  const VISUAL_GAP_GAIN = 45;
 
   function getState() {
     return {
@@ -67,15 +74,15 @@
     if (!result.valid) {
       els.theta.textContent = '—';
       els.beta.textContent = '—';
-      els.R.textContent = fmt(result.R_yd, 1);
-      els.H.textContent = fmt(result.H_yd, 1);
-      els.validity.textContent = 'No real solution for these inputs — the target is beyond the muzzle velocity\u2019s reach on this line of sight.';
+      els.R.textContent = fmt(result.R_m, 1);
+      els.H.textContent = fmt(result.H_m, 1);
+      els.validity.textContent = 'No real solution for these inputs. The target is beyond the muzzle velocity\u2019s reach on this line of sight.';
       els.validity.style.display = 'block';
     } else {
       els.theta.textContent = fmt(result.thetaDeg, 3) + '\u00B0';
       els.beta.textContent = fmt(result.betaDeg, 3) + '\u00B0';
-      els.R.textContent = fmt(result.R_yd, 1);
-      els.H.textContent = fmt(result.H_yd, 1);
+      els.R.textContent = fmt(result.R_m, 1);
+      els.H.textContent = fmt(result.H_m, 1);
       els.validity.style.display = 'none';
     }
 
@@ -129,38 +136,54 @@
       x1: target[0], y1: target[1], x2: rightAngle[0], y2: rightAngle[1], class: 'guide-dashed',
     }));
 
-    // aimed bore direction + ideal trajectory, only if a solution exists
+    // aimed bore direction + ideal trajectory, only if a solution exists.
+    // The true gap beta = alpha - theta is often well under a degree, which
+    // would draw the bore line and trajectory right on top of the line of
+    // sight. So the diagram exaggerates that angular gap by VISUAL_GAP_GAIN
+    // for legibility only. Every number in the panel is still the exact,
+    // un-exaggerated result.
     if (result.valid) {
       const theta = toRad(result.thetaDeg);
+      const displayThetaDeg = alphaDeg - (alphaDeg - result.thetaDeg) * VISUAL_GAP_GAIN;
+      const displayTheta = toRad(displayThetaDeg);
       const boreLen = drawLen;
-      const boreEnd = [shooter[0] + boreLen * Math.cos(theta), shooter[1] + boreLen * Math.sin(theta)];
+      const boreEnd = [shooter[0] + boreLen * Math.cos(displayTheta), shooter[1] + boreLen * Math.sin(displayTheta)];
       layer.appendChild(svgEl('line', {
         x1: shooter[0], y1: shooter[1], x2: boreEnd[0], y2: boreEnd[1], class: 'line-bore',
       }));
 
-      // ideal trajectory curve, scaled into the same pixel box via parametric t
+      // ideal trajectory curve: compute the true physical shape at theta,
+      // then rotate every sampled point by the same exaggerated angular
+      // offset (displayTheta - theta) about the shooter so the curve still
+      // meets the (exaggerated) bore line at the muzzle and visibly bows
+      // away from the line of sight, without changing its shape.
       const state = getState();
-      const R_ft = result.R_ft;
-      const pts = trajectoryPoints(R_ft, theta, state.v, state.g, 48);
-      const sx = R_ft > 0 ? Rpx / R_ft : 1;
+      const R_m = result.R_m;
+      const pts = trajectoryPoints(R_m, theta, state.v, state.g, 48);
+      const sx = R_m > 0 ? Rpx / R_m : 1;
+      const gapRad = displayTheta - theta;
+      const cosGap = Math.cos(gapRad), sinGap = Math.sin(gapRad);
       let d = '';
       pts.forEach(([x, y], i) => {
-        const px = shooter[0] + x * sx;
-        const py = shooter[1] + y * sx; // uniform scale on both axes using sx to preserve shape
+        const lx = x * sx, ly = y * sx; // local coords, uniform scale to preserve shape
+        const rx = lx * cosGap - ly * sinGap;
+        const ry = lx * sinGap + ly * cosGap;
+        const px = shooter[0] + rx;
+        const py = shooter[1] + ry;
         d += (i === 0 ? 'M' : 'L') + px.toFixed(2) + ',' + py.toFixed(2) + ' ';
       });
       layer.appendChild(svgEl('path', { d, class: 'path-trajectory' }));
 
-      // theta arc
-      layer.appendChild(arcPath(shooter, 26, 0, result.thetaDeg, 'arc-theta'));
-      const thetaLabelAngle = toRad(result.thetaDeg / 2);
-      layer.appendChild(labelAt(shooter, 34, thetaLabelAngle, '\u03B8', 'arc-label arc-label-theta'));
+      // theta arc (drawn at the exaggerated angle, matching the bore line)
+      layer.appendChild(arcPath(shooter, 24, 0, displayThetaDeg, 'arc-theta'));
+      const thetaLabelAngle = toRad(displayThetaDeg * 0.72);
+      layer.appendChild(labelAt(shooter, 40, thetaLabelAngle, '\u03B8', 'arc-label arc-label-theta'));
     }
 
     // alpha arc (line of sight angle)
-    layer.appendChild(arcPath(shooter, 40, 0, alphaDeg, 'arc-alpha'));
-    const alphaLabelAngle = toRad(alphaDeg / 2);
-    layer.appendChild(labelAt(shooter, 48, alphaLabelAngle, '\u03B1', 'arc-label arc-label-alpha'));
+    layer.appendChild(arcPath(shooter, 24, 0, alphaDeg, 'arc-alpha'));
+    const alphaLabelAngle = toRad(alphaDeg * 0.28);
+    layer.appendChild(labelAt(shooter, 40, alphaLabelAngle, '\u03B1', 'arc-label arc-label-alpha'));
 
     // points
     layer.appendChild(svgEl('circle', { cx: shooter[0], cy: shooter[1], r: 4.5, class: 'pt-shooter' }));
@@ -183,7 +206,7 @@
 
     // R and H dimension labels
     const rLabel = svgEl('text', { x: (shooter[0] + rightAngle[0]) / 2, y: oy + maxDrop + 46, class: 'dim-label', 'text-anchor': 'middle' });
-    rLabel.textContent = 'R = D cos \u03B1 \u2248 ' + fmt(result.R_yd, 1) + ' yd';
+    rLabel.textContent = 'R = D cos \u03B1 \u2248 ' + fmt(result.R_m, 1) + ' m';
     layer.appendChild(rLabel);
 
     const hLabelY = (rightAngle[1] + target[1]) / 2;
@@ -191,7 +214,7 @@
     hLabelLine1.textContent = 'H = D sin \u03B1';
     layer.appendChild(hLabelLine1);
     const hLabelLine2 = svgEl('text', { x: ox + maxRun + 14, y: hLabelY + 9, class: 'dim-label', 'text-anchor': 'start' });
-    hLabelLine2.textContent = '\u2248 ' + fmt(result.H_yd, 1) + ' yd';
+    hLabelLine2.textContent = '\u2248 ' + fmt(result.H_m, 1) + ' m';
     layer.appendChild(hLabelLine2);
 
     // beta callout, only if valid
@@ -199,6 +222,10 @@
       const betaLabel = svgEl('text', { x: ox + 90, y: oy - 26, class: 'beta-label' });
       betaLabel.textContent = '\u03B2 = \u03B1 \u2212 \u03B8 \u2248 ' + fmt(result.betaDeg, 2) + '\u00B0 hold above line of sight';
       layer.appendChild(betaLabel);
+
+      const gapNote = svgEl('text', { x: ox + 90, y: oy - 10, class: 'gap-note' });
+      gapNote.textContent = '(angular gap between \u03B1, \u03B8 shown ' + VISUAL_GAP_GAIN + '\u00D7 wider than actual, for visibility)';
+      layer.appendChild(gapNote);
     }
   }
 

@@ -188,6 +188,12 @@ body {
   font-weight: 600;
   font-family: var(--font-body);
 }
+.gap-note {
+  fill: var(--color-text-faint);
+  font-size: 11px;
+  font-style: italic;
+  font-family: var(--font-body);
+}
 
 .validity-note {
   position: absolute;
