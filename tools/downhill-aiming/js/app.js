@@ -174,16 +174,22 @@
       });
       layer.appendChild(svgEl('path', { d, class: 'path-trajectory' }));
 
-      // theta arc (drawn at the exaggerated angle, matching the bore line)
-      layer.appendChild(arcPath(shooter, 24, 0, displayThetaDeg, 'arc-theta'));
-      const thetaLabelAngle = toRad(displayThetaDeg * 0.72);
-      layer.appendChild(labelAt(shooter, 40, thetaLabelAngle, '\u03B8', 'arc-label arc-label-theta'));
+      // theta arc: small radius, hugging the bore line closely so it
+      // reads as its own ring distinct from alpha's.
+      const thetaRadius = 32;
+      layer.appendChild(arcPath(shooter, thetaRadius, 0, displayThetaDeg, 'arc-theta'));
+      const thetaLabelAngle = toRad(displayThetaDeg * 0.5);
+      layer.appendChild(labelAt(shooter, thetaRadius + 16, thetaLabelAngle, '\u03B8', 'arc-label arc-label-theta'));
     }
 
-    // alpha arc (line of sight angle)
-    layer.appendChild(arcPath(shooter, 24, 0, alphaDeg, 'arc-alpha'));
-    const alphaLabelAngle = toRad(alphaDeg * 0.28);
-    layer.appendChild(labelAt(shooter, 40, alphaLabelAngle, '\u03B1', 'arc-label arc-label-alpha'));
+    // alpha arc: much larger radius than theta's, so the two arcs sit as
+    // clearly separated concentric rings instead of overlapping, with
+    // labels pulled to opposite ends of their own arc so they don't
+    // collide near the vertex.
+    const alphaRadius = 84;
+    layer.appendChild(arcPath(shooter, alphaRadius, 0, alphaDeg, 'arc-alpha'));
+    const alphaLabelAngle = toRad(alphaDeg * 0.95);
+    layer.appendChild(labelAt(shooter, alphaRadius + 18, alphaLabelAngle, '\u03B1', 'arc-label arc-label-alpha'));
 
     // points
     layer.appendChild(svgEl('circle', { cx: shooter[0], cy: shooter[1], r: 4.5, class: 'pt-shooter' }));
