@@ -1,0 +1,197 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Lesson 2: 2,000 Years of Trying to Prove It | From Euclid to Ramanujan</title>
+<meta name="description" content="Lesson 2 of a guided tour of Dr Phil's master's thesis on Ramanujan's tau-function: an interactive timeline of the attempts to prove Euclid's fifth postulate, from Ptolemy to Beltrami and Klein." />
+
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://api.fontshare.com/v2/css?f[]=jetbrains-mono@400,500,700&display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400..700&display=swap" rel="stylesheet" />
+
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%230b0f14'/%3E%3Cline x1='3' y1='16' x2='29' y2='16' stroke='%23f2f4f6' stroke-width='1.6'/%3E%3Ccircle cx='8' cy='16' r='3' fill='%23e3a548'/%3E%3Ccircle cx='17' cy='16' r='3' fill='%2358d3c9'/%3E%3Ccircle cx='25' cy='16' r='3' fill='%23a586f0'/%3E%3C/svg%3E" />
+
+<link rel="stylesheet" href="css/base.css" />
+<link rel="stylesheet" href="css/theme.css" />
+<link rel="stylesheet" href="css/style.css" />
+</head>
+<body class="page-timeline">
+<div class="app">
+
+  <header class="topbar">
+    <div class="brand" aria-label="Lesson 2 logo">
+      <svg width="30" height="30" viewBox="0 0 32 32" fill="none" aria-hidden="true">
+        <line x1="3" y1="16" x2="29" y2="16" stroke="var(--color-text)" stroke-width="1.6"/>
+        <circle cx="8" cy="16" r="3" fill="var(--c-b)"/>
+        <circle cx="17" cy="16" r="3" fill="var(--c-a)"/>
+        <circle cx="25" cy="16" r="3" fill="var(--c-c)"/>
+      </svg>
+      <div class="brand-text">
+        <span class="brand-title">Lesson 2: 2,000 Years of Trying to Prove It</span>
+        <span class="brand-sub">From Euclid to Ramanujan, a guided tour</span>
+      </div>
+    </div>
+
+    <div class="topbar-actions">
+      <a class="btn btn-ghost" href="../../">&larr; Dr Phil's Math Blog</a>
+      <button class="btn btn-ghost" id="resetBtn" type="button">Reset</button>
+      <button class="theme-toggle" id="themeToggle" type="button" aria-label="Switch theme">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <main class="layout">
+
+    <section class="stage-wrap">
+      <p class="swipe-hint">Swipe sideways to see the whole timeline &rarr;</p>
+      <svg id="stage" viewBox="0 0 1000 420" aria-label="Timeline of attempts to prove Euclid's fifth postulate, from about 300 BC to 1871">
+        <g id="timelineLayer"></g>
+      </svg>
+    </section>
+
+    <aside class="panel">
+
+      <div class="panel-section">
+        <h2 class="panel-title">Step through the story</h2>
+        <div class="stepper">
+          <button class="btn btn-ghost" id="prevBtn" type="button">&larr; Earlier</button>
+          <span class="step-count" id="stepCount">1 of 18</span>
+          <button class="btn btn-ghost" id="nextBtn" type="button">Later &rarr;</button>
+        </div>
+        <div class="event-card" id="eventCard" aria-live="polite"></div>
+      </div>
+
+      <div class="panel-section">
+        <h2 class="panel-title">Show</h2>
+        <div class="chips">
+          <button class="chip" type="button" data-cat="try" aria-pressed="true"><span class="sw cat-try"></span>Trying to prove it</button>
+          <button class="chip" type="button" data-cat="go" aria-pressed="true"><span class="sw cat-go"></span>Letting it go</button>
+          <button class="chip" type="button" data-cat="safe" aria-pressed="true"><span class="sw cat-safe"></span>Showing it is sound</button>
+          <button class="chip" type="button" data-cat="ctx" aria-pressed="true"><span class="sw cat-ctx"></span>Along the way</button>
+        </div>
+      </div>
+
+      <div class="panel-section panel-note">
+        <h2 class="panel-title">Reading the timeline</h2>
+        <p>
+          Click a dot, or use the arrow keys. The left quarter squeezes about
+          <strong>1,900 years</strong> into a small space; the rest stretches out the busy last
+          <strong>280 years</strong>, when the problem was finally settled.
+        </p>
+      </div>
+
+    </aside>
+
+  </main>
+
+  <article class="writeup">
+    <div class="writeup-inner">
+
+      <p class="kicker">From Euclid to Ramanujan &middot; Lesson 2 of 18</p>
+      <h1>2,000 years of trying to prove it</h1>
+      <p class="lede">For two thousand years, some of the best mathematicians in the world tried to show that Euclid's fifth postulate was unnecessary. They all failed, and the way they failed turned out to be the discovery.</p>
+
+      <h2>The recap</h2>
+      <p>
+        In Lesson 1 we met Euclid's fifth postulate: if a line crosses two others and the inside
+        angles on one side add up to less than 180&deg;, those two lines meet on that side. It
+        sounds obvious, but it is long and awkward next to Euclid's other four starting
+        assumptions, and Euclid himself put off using it for as long as he could.
+      </p>
+      <p>
+        So mathematicians tried to <em>prove</em> it from the other four, which would have turned
+        it from an assumption into a theorem. Ptolemy tried in the second century. Proclus, in the
+        fifth century, pointed out Ptolemy's mistake and tried again. In the Islamic world Ibn
+        al-Haytham, Omar Khayyam and Nasir al-Din al-Tusi took up the challenge, followed in
+        Europe by Wallis, Saccheri, Lambert and Legendre. By 1767 d'Alembert was calling it the
+        scandal of elementary geometry.
+      </p>
+
+      <h2>The trap they kept falling into</h2>
+      <p>
+        Almost every failed proof made the same mistake: somewhere along the way it quietly
+        assumed something that sounds harmless but is really the fifth postulate in disguise.
+        "Parallel lines stay the same distance apart." "You can scale a triangle up without
+        changing its shape." "The angles of a triangle add to 180&deg;." Each of these turns out
+        to be <strong>equivalent</strong> to the fifth postulate, so using one to prove it is
+        going round in a circle.
+      </p>
+      <p>
+        Saccheri, in 1733, tried something bolder. He assumed the postulate was false and
+        hunted for a contradiction. He proved a long list of strange results, and then, because
+        he was sure Euclid must be right, declared that one of them was absurd. He had in fact
+        been doing non-Euclidean geometry without knowing it.
+      </p>
+
+      <h2>Letting it go</h2>
+      <p>
+        In the early 1800s three people, working separately, took the leap that Saccheri would
+        not. By 1817 Gauss had become convinced the fifth postulate could not be proved, but he
+        never published. Nikolai Lobachevsky in Kazan (1829) and J&aacute;nos Bolyai in Hungary
+        (1832) each published a complete geometry that keeps Euclid's first four postulates and
+        throws away the fifth. In their geometry, through a point off a line there are
+        <em>many</em> lines that never meet it, and the angles of a triangle add up to
+        <strong>less</strong> than 180&deg;.
+      </p>
+      <p>
+        That still left a worry. Perhaps the contradiction was there, and no one had found it
+        yet. In 1868 Eugenio Beltrami settled it by building a working model of the new geometry
+        entirely out of ordinary Euclidean pieces, and in 1871 Felix Klein recast it in a cleaner
+        form. If the new geometry ever contradicted itself, so would Euclid's. After about two
+        thousand years, the question was closed: the fifth postulate can never be proved from the
+        other four.
+      </p>
+
+      <div class="for-maths">
+        <h2>For the mathematicians</h2>
+        <p>
+          Beltrami's and Klein's models give a <strong>relative consistency</strong> result:
+          hyperbolic geometry is consistent if Euclidean geometry is. Since hyperbolic geometry
+          satisfies Euclid's other axioms and denies Postulate V, Postulate V is
+          <strong>independent</strong> of them. As the thesis puts it (Chapter 1), "it was finally
+          determined that a proof of the postulate was impossible."
+        </p>
+        <p>
+          The Khayyam&ndash;Saccheri quadrilateral is the standard tool: two equal sides standing at
+          right angles on a base. Its two top angles are equal, and the hypotheses of the right,
+          acute and obtuse angle correspond to Euclidean, hyperbolic and elliptic geometry.
+          Lambert noticed that under the acute-angle hypothesis a triangle's angle sum falls short
+          of 180&deg; by an amount that grows with its area. Klein's distance is built from
+          Cayley's 1859 projective metric, using a cross ratio, an idea that returns in Lesson 4.
+        </p>
+      </div>
+
+      <h2>Something to think about</h2>
+      <p>
+        Gauss worked this out years before Lobachevsky and Bolyai, but kept quiet. Why might a
+        mathematician sit on a discovery like this? And if a geometry has no contradictions in
+        it, does that make it "true"?
+      </p>
+
+      <h2>References</h2>
+      <ol class="refs">
+        <li>Philip Bos, <em>On Ramanujan's &tau;-function, Modular Forms and Hecke Operators</em>, MSc thesis, School of Mathematics and Statistics, University of Sydney, 2017, Chapter 1.</li>
+        <li>J. J. O'Connor and E. F. Robertson, <a href="https://mathshistory.st-andrews.ac.uk/HistTopics/Non-Euclidean_geometry/" target="_blank" rel="noopener">Non-Euclidean geometry</a>, MacTutor History of Mathematics, University of St Andrews.</li>
+        <li><a href="https://arxiv.org/pdf/1409.1140" target="_blank" rel="noopener">A Survey of the Development of Geometry up to 1870</a>, arXiv:1409.1140.</li>
+        <li><a href="https://mathshistory.st-andrews.ac.uk/Biographies/Lobachevsky/" target="_blank" rel="noopener">Nikolai Ivanovich Lobachevsky</a>, MacTutor History of Mathematics.</li>
+        <li><a href="https://mathshistory.st-andrews.ac.uk/SH/beltrami_sh.pdf" target="_blank" rel="noopener">Beltrami and the consistency of non-Euclidean geometry</a>, MacTutor.</li>
+        <li><a href="https://www.cut-the-knot.org/triangle/pythpar/Attempts.shtml" target="_blank" rel="noopener">The fifth postulate: attempts to prove</a>, Cut the Knot.</li>
+        <li>Each event in the timeline links to its own source.</li>
+      </ol>
+
+      <nav class="lesson-nav" aria-label="Lesson navigation">
+        <a href="../01-parallel-postulate/">&larr; Lesson 1: Euclid's fifth postulate</a>
+        <span>Next: Poincar&eacute;'s model (coming soon)</span>
+      </nav>
+
+    </div>
+  </article>
+
+</div>
+
+<script src="js/app.js"></script>
+</body>
+</html>

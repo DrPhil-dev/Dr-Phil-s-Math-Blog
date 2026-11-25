@@ -205,3 +205,87 @@ a.tool-card:hover {
     gap: 0.4rem;
   }
 }
+
+/* ---------- index and topic sections ---------- */
+
+.site-index {
+  border: 1px solid var(--color-divider);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+  padding: 1.4rem 1.5rem 1.2rem;
+  margin-bottom: 3rem;
+}
+.index-title {
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--color-text-muted);
+  margin-bottom: 1rem;
+}
+.index-cols {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 1.2rem 1.6rem;
+}
+.index-cols h3 {
+  font-family: var(--font-display);
+  font-size: 0.98rem;
+  font-weight: 700;
+  margin-bottom: 0.35rem;
+}
+.index-cols h3 a { color: var(--color-text); text-decoration: none; }
+.index-cols h3 a:hover { color: var(--color-primary); }
+.index-sub { font-size: 0.8rem; color: var(--color-text-muted); margin-bottom: 0.35rem; }
+.index-cols ul { list-style: none; padding: 0; margin: 0; }
+.index-cols li { font-size: 0.88rem; line-height: 1.7; }
+.index-cols li a { color: var(--color-primary); text-decoration: none; }
+.index-cols li a:hover { text-decoration: underline; }
+.index-cols li.soon { color: var(--color-text-faint); }
+
+.topic { margin-bottom: 3rem; scroll-margin-top: 1.5rem; }
+.topic-title {
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  margin-bottom: 0.9rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--color-divider);
+}
+.topic-intro {
+  color: var(--color-text-muted);
+  line-height: 1.6;
+  max-width: 680px;
+  margin-bottom: 1.25rem;
+}
+
+.tour-parts {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 1rem 1.6rem;
+}
+.tour-part h3 {
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--color-text-muted);
+  margin-bottom: 0.3rem;
+}
+.tour-part ol { padding-left: 1.6rem; margin: 0; }
+.tour-part li { font-size: 0.92rem; line-height: 1.6; margin-bottom: 0.15rem; }
+.tour-part li a { color: var(--color-primary); font-weight: 600; text-decoration: none; }
+.tour-part li a:hover { text-decoration: underline; }
+.tour-part li.soon { color: var(--color-text-faint); }
+.soon-tag {
+  font-size: 0.68rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  border: 1px solid var(--color-divider);
+  border-radius: var(--radius-full);
+  padding: 0.05rem 0.45rem;
+  margin-left: 0.25rem;
+  white-space: nowrap;
+}
