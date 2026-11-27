@@ -1,0 +1,192 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Lesson 4: How Far Is the Edge? | From Euclid to Ramanujan</title>
+<meta name="description" content="Lesson 4 of a guided tour of Dr Phil's master's thesis on Ramanujan's tau-function: distance in the Poincaré disc, defined by the cross ratio. Walk towards the edge and watch the distance grow without limit." />
+
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://api.fontshare.com/v2/css?f[]=jetbrains-mono@400,500,700&display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400..700&display=swap" rel="stylesheet" />
+
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%230b0f14'/%3E%3Ccircle cx='16' cy='16' r='12' fill='none' stroke='%23f2f4f6' stroke-width='1.6'/%3E%3Cpath d='M6 9 A11 11 0 0 1 26 9' fill='none' stroke='%2358d3c9' stroke-width='1.8'/%3E%3C/svg%3E" />
+
+<link rel="stylesheet" href="css/base.css" />
+<link rel="stylesheet" href="css/theme.css" />
+<link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+<div class="app">
+
+  <header class="topbar">
+    <div class="brand" aria-label="Lesson 4 logo">
+      <svg width="30" height="30" viewBox="0 0 32 32" fill="none" aria-hidden="true">
+        <circle cx="16" cy="16" r="12" stroke="var(--color-text)" stroke-width="1.6"/>
+        <circle cx="16" cy="16" r="1.6" fill="var(--c-b)"/>
+        <circle cx="16" cy="21.5" r="1.5" fill="var(--c-b)"/>
+        <circle cx="16" cy="25" r="1.3" fill="var(--c-b)"/>
+        <circle cx="16" cy="26.8" r="1.1" fill="var(--c-a)"/>
+      </svg>
+      <div class="brand-text">
+        <span class="brand-title">Lesson 4: How Far Is the Edge?</span>
+        <span class="brand-sub">From Euclid to Ramanujan, a guided tour</span>
+      </div>
+    </div>
+
+    <div class="topbar-actions">
+      <a class="btn btn-ghost" href="../../">&larr; Dr Phil's Math Blog</a>
+      <button class="btn btn-ghost" id="resetBtn" type="button">Reset</button>
+      <button class="theme-toggle" id="themeToggle" type="button" aria-label="Switch theme">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <main class="layout">
+
+    <section class="stage-wrap">
+      <svg id="stage" viewBox="-1.14 -1.14 2.28 2.28" aria-label="The Poincaré disc, showing hyperbolic distance: footprints one unit apart crowd towards the edge">
+        <g id="discLayer"></g>
+      </svg>
+    </section>
+
+    <aside class="panel">
+
+      <div class="panel-section">
+        <h2 class="panel-title">Choose what to explore</h2>
+        <div class="mode-tabs" role="group" aria-label="What to explore">
+          <button class="btn btn-ghost" type="button" data-mode="walk" aria-pressed="true">Walk out</button>
+          <button class="btn btn-ghost" type="button" data-mode="measure" aria-pressed="false">Measure</button>
+          <button class="btn btn-ghost" type="button" data-mode="same" aria-pressed="false">Same size</button>
+        </div>
+        <p class="mode-help" id="modeHelp"></p>
+        <div id="walkControls">
+          <div class="field">
+            <label for="distSlider"><span>Distance walked</span><span id="distOut">3.00</span></label>
+            <input type="range" id="distSlider" min="0" max="12" step="0.01" value="3" />
+          </div>
+          <div class="play-row">
+            <button class="btn btn-ghost" id="walkBtn" type="button">Walk</button>
+            <button class="btn btn-ghost" id="homeBtn" type="button">Back to the centre</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel-section">
+        <h2 class="panel-title">What you see</h2>
+        <div class="readout">
+          <div class="readout-row"><span class="pair-label" id="r1l"></span><span class="coord" id="r1v"></span></div>
+          <div class="readout-row highlight"><span class="pair-label" id="r2l"></span><span class="coord" id="r2v"></span></div>
+          <div class="readout-row"><span class="pair-label" id="r3l"></span><span class="coord" id="r3v"></span></div>
+        </div>
+        <p class="mode-help" id="check"></p>
+      </div>
+
+    </aside>
+
+  </main>
+
+  <article class="writeup">
+    <div class="writeup-inner">
+
+      <p class="kicker">From Euclid to Ramanujan &middot; Lesson 4 of 18</p>
+      <h1>How far is the edge? Infinitely far</h1>
+      <p class="lede">The Poincar&eacute; disc looks small enough to hold in your hand, yet you could walk inside it forever and never reach the rim. The secret is in how we measure distance.</p>
+
+      <h2>The recap</h2>
+      <p>
+        In Lesson 3 the points of our geometry were the points inside a circle, and the lines were
+        arcs meeting the edge at right angles. But a geometry needs more than points and lines: it
+        needs a way to say how far apart two points are. A ruler will not do, because a ruler
+        would make the disc finite, and we know the hyperbolic plane goes on forever.
+      </p>
+      <p>
+        So distance in the disc is <strong>stretched</strong>, more and more the closer you get to
+        the edge. Start at the centre and take steps of exactly one unit each. The first step
+        carries you almost halfway to the rim (about 46%). The next carries you less far on the
+        page, and the next less again. After ten steps you are 99.99% of the way across, and the
+        rim is still infinitely far away.
+      </p>
+
+      <h2>Measuring with four points</h2>
+      <p>
+        How do you actually measure? Take your two points, draw the one line through them, and
+        follow it out to where it meets the edge, at two more points. Four points on one circle
+        give a number called the <strong>cross ratio</strong>, which compares how far your two
+        points are from each end. The distance between your points is the
+        <strong>logarithm</strong> of that number.
+      </p>
+      <p>
+        The cross ratio has a magic property: any of the symmetries of the disc (the M&ouml;bius
+        transformations of Lesson 5) leave it unchanged. So distances do not change when you move
+        things around, which is exactly what a sensible distance should do. And as one of your
+        points nears the edge, the cross ratio grows without limit, and so does its logarithm.
+        That is why the edge is infinitely far away.
+      </p>
+
+      <h2>What "straight" means</h2>
+      <p>
+        On the companion page, measure two points along the arc, and then along the straight chord
+        between them. The chord is <em>longer</em>. Because distance is cheaper near the centre,
+        the shortest route bows inwards towards it. That is why the lines of this geometry are
+        arcs: each one is the shortest path between its points. Which path is "straight" depends
+        on how you measure.
+      </p>
+
+      <div class="for-maths">
+        <h2>For the mathematicians</h2>
+        <p>
+          Following Siegel, the thesis (Chapter 2.2) uses the cross ratio
+          <em>D</em>(<em>z</em>&#8321;, <em>z</em>&#8322;, <em>z</em>&#8323;, <em>z</em>&#8324;) =
+          ((<em>z</em>&#8321; &minus; <em>z</em>&#8323;)/(<em>z</em>&#8321; &minus; <em>z</em>&#8324;)) /
+          ((<em>z</em>&#8322; &minus; <em>z</em>&#8323;)/(<em>z</em>&#8322; &minus; <em>z</em>&#8324;)),
+          which is invariant under M&ouml;bius maps and is real exactly when the four points are
+          concyclic (Appendix A.1). With <em>z</em>&#8323;, <em>z</em>&#8324; the ends of the nominal
+          line through <em>z</em>&#8321;, <em>z</em>&#8322;, in cyclic order, the distance is
+          &delta;(<em>z</em>&#8321;, <em>z</em>&#8322;) = log <em>D</em> &ge; 0. It is symmetric,
+          M&ouml;bius-invariant and satisfies the triangle inequality (Appendix A.2).
+        </p>
+        <p>
+          Moving <em>z</em>&#8321; to 0 and <em>z</em>&#8322; to a real <em>t</em> &gt; 0 gives
+          &delta;(0, <em>t</em>) = log((1 + <em>t</em>)/(1 &minus; <em>t</em>)), and hence the closed
+          form &delta;(<em>z</em>&#8321;, <em>z</em>&#8322;) =
+          log((|1 &minus; <span style="text-decoration:overline">z&#8321;</span><em>z</em>&#8322;| + |<em>z</em>&#8322; &minus; <em>z</em>&#8321;|) /
+          (|1 &minus; <span style="text-decoration:overline">z&#8321;</span><em>z</em>&#8322;| &minus; |<em>z</em>&#8322; &minus; <em>z</em>&#8321;|)),
+          with element of arc length <em>ds</em> = 2|<em>dz</em>| / (1 &minus; |<em>z</em>|&sup2;).
+          The page computes the distance both ways, by the cross ratio and by this formula, and
+          the chord's length by integrating <em>ds</em> along it. A walker at distance <em>d</em>
+          from the centre sits at radius tanh(<em>d</em>/2). The idea of measuring distance with a
+          cross ratio goes back to Cayley's 1859 projective metric, which Klein used in 1871.
+        </p>
+      </div>
+
+      <h2>Something to think about</h2>
+      <p>
+        If every circle in the "Same size" view really is the same size, how many of them could
+        you fit around the centre circle, touching it? In ordinary geometry the answer is six.
+        Here, is it more or fewer?
+      </p>
+
+      <h2>References</h2>
+      <ol class="refs">
+        <li>Philip Bos, <em>On Ramanujan's &tau;-function, Modular Forms and Hecke Operators</em>, MSc thesis, School of Mathematics and Statistics, University of Sydney, 2017, Chapter 2.2 and Appendix A.</li>
+        <li>C. L. Siegel, <em>Topics in Complex Function Theory</em>, Vol. II, Wiley, New York, 1969, Chapter 1.</li>
+        <li>H. E. Wolfe, <em>Introduction to Non-Euclidean Geometry</em>, Holt, Rinehart &amp; Winston, New York, 1945.</li>
+        <li>J. J. O'Connor and E. F. Robertson, <a href="https://mathshistory.st-andrews.ac.uk/HistTopics/Non-Euclidean_geometry/" target="_blank" rel="noopener">Non-Euclidean geometry</a>, MacTutor History of Mathematics, on Cayley (1859) and Klein (1871).</li>
+      </ol>
+
+      <nav class="lesson-nav" aria-label="Lesson navigation">
+        <a href="../03-poincare-disc/">&larr; Lesson 3: Poincar&eacute;'s disc</a>
+        <span>Next: M&ouml;bius transformations (coming soon)</span>
+      </nav>
+
+    </div>
+  </article>
+
+</div>
+
+<script src="js/app.js"></script>
+</body>
+</html>
