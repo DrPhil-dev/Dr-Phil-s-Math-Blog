@@ -1,0 +1,188 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Lesson 5: From the Disc to the Half-Plane | From Euclid to Ramanujan</title>
+<meta name="description" content="Lesson 5 of a guided tour of Dr Phil's master's thesis on Ramanujan's tau-function: Möbius transformations and the Cayley transform, which carries the Poincaré disc onto the upper half-plane where modular forms live." />
+
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://api.fontshare.com/v2/css?f[]=jetbrains-mono@400,500,700&display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400..700&display=swap" rel="stylesheet" />
+
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%230b0f14'/%3E%3Ccircle cx='16' cy='16' r='12' fill='none' stroke='%23f2f4f6' stroke-width='1.6'/%3E%3Cpath d='M6 9 A11 11 0 0 1 26 9' fill='none' stroke='%2358d3c9' stroke-width='1.8'/%3E%3C/svg%3E" />
+
+<link rel="stylesheet" href="css/base.css" />
+<link rel="stylesheet" href="css/theme.css" />
+<link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+<div class="app">
+
+  <header class="topbar">
+    <div class="brand" aria-label="Lesson 5 logo">
+      <svg width="30" height="30" viewBox="0 0 32 32" fill="none" aria-hidden="true">
+        <circle cx="9" cy="16" r="6.5" stroke="var(--color-text)" stroke-width="1.5"/>
+        <path d="M18 23 H30" stroke="var(--color-text)" stroke-width="1.5"/>
+        <path d="M20 23 A4 4 0 0 1 28 23" stroke="var(--c-a)" stroke-width="1.6"/>
+        <circle cx="9" cy="16" r="1.4" fill="var(--c-a)"/>
+      </svg>
+      <div class="brand-text">
+        <span class="brand-title">Lesson 5: From the Disc to the Half-Plane</span>
+        <span class="brand-sub">From Euclid to Ramanujan, a guided tour</span>
+      </div>
+    </div>
+
+    <div class="topbar-actions">
+      <a class="btn btn-ghost" href="../../">&larr; Dr Phil's Math Blog</a>
+      <button class="btn btn-ghost" id="resetBtn" type="button">Reset</button>
+      <button class="theme-toggle" id="themeToggle" type="button" aria-label="Switch theme">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <main class="layout">
+
+    <section class="stage-wrap">
+      <div class="twin">
+        <figure>
+          <svg id="discSvg" viewBox="-1.14 -1.14 2.28 2.28" aria-label="The Poincaré disc">
+            <g id="discLayer"></g>
+          </svg>
+          <figcaption>The disc</figcaption>
+        </figure>
+        <figure>
+          <svg id="hpSvg" viewBox="-3.3 -4.3 6.6 4.75" aria-label="The upper half-plane">
+            <g id="hpLayer" class="hp"></g>
+          </svg>
+          <figcaption>The upper half-plane</figcaption>
+        </figure>
+        <p class="map-arrow">w = i(1 &minus; z) / (1 + z)</p>
+      </div>
+    </section>
+
+    <aside class="panel">
+
+      <div class="panel-section">
+        <h2 class="panel-title">Choose what to move</h2>
+        <div class="mode-tabs" role="group" aria-label="What to move" style="grid-template-columns: repeat(2, 1fr)">
+          <button class="btn btn-ghost" type="button" data-mode="point" aria-pressed="true">A point</button>
+          <button class="btn btn-ghost" type="button" data-mode="line" aria-pressed="false">A line</button>
+        </div>
+        <p class="mode-help" id="modeHelp"></p>
+        <label class="check"><input type="checkbox" id="gridToggle" checked /> <span>Show circles and lines round the centre</span></label>
+        <label class="check"><input type="checkbox" id="edgeToggle" checked /> <span>Colour the edge</span></label>
+      </div>
+
+      <div class="panel-section">
+        <h2 class="panel-title">What you see</h2>
+        <div class="readout">
+          <div class="readout-row"><span class="pair-label" id="r1l"></span><span class="coord" id="r1v"></span></div>
+          <div class="readout-row"><span class="pair-label" id="r2l"></span><span class="coord" id="r2v"></span></div>
+          <div class="readout-row highlight"><span class="pair-label" id="r3l"></span><span class="coord" id="r3v"></span></div>
+        </div>
+      </div>
+
+    </aside>
+
+  </main>
+
+  <article class="writeup">
+    <div class="writeup-inner">
+
+      <p class="kicker">From Euclid to Ramanujan &middot; Lesson 5 of 18</p>
+      <h1>From the disc to the half-plane</h1>
+      <p class="lede">The Poincar&eacute; disc is not the only picture of hyperbolic geometry. With one clever map, the whole disc unrolls into the upper half of the plane, and that is where modular forms live.</p>
+
+      <h2>The recap</h2>
+      <p>
+        In Lessons 3 and 4 we built hyperbolic geometry inside a disc: lines are arcs meeting the
+        edge at right angles, and distance stretches so that the edge is infinitely far away. Now
+        we want to move that whole geometry somewhere else without breaking it, the way a map of
+        the world can be redrawn on a different projection.
+      </p>
+
+      <h2>M&ouml;bius transformations</h2>
+      <p>
+        The tool is a family of maps studied by August Ferdinand M&ouml;bius (1790&ndash;1868):
+        <strong>w = (az + b) / (cz + d)</strong>, where a, b, c and d are complex numbers with
+        ad &ne; bc. Every one of them is built from three simple moves: sliding the plane along,
+        turning and stretching it, and the move w = 1/z, which turns the plane inside out. They
+        have three precious properties. They take circles and lines to circles and lines. They keep
+        angles the same. And they keep the cross ratio of four points the same, which, as we saw
+        in Lesson 4, means they keep hyperbolic distance the same.
+      </p>
+
+      <h2>Unrolling the disc</h2>
+      <p>
+        One particular M&ouml;bius map, a <strong>Cayley transform</strong>, does something
+        remarkable: <strong>w = i(1 &minus; z) / (1 + z)</strong> carries the inside of the disc
+        exactly onto the upper half of the plane. The centre of the disc goes to the point
+        <em>i</em>. The edge of the disc is unrolled onto the real line, with the single point
+        &minus;1 sent off to infinity. And because the map keeps circles, angles and distances,
+        the lines of the disc become lines of the new picture: semicircles standing upright on the
+        real line, or vertical half-lines.
+      </p>
+      <p>
+        Nothing about the geometry has changed. Two points are exactly as far apart after the move
+        as before. The companion page shows the distance computed in each picture, side by side,
+        and they always agree.
+      </p>
+
+      <h2>Why move at all?</h2>
+      <p>
+        As the thesis puts it, modular forms customarily "live" in the upper half-plane. The
+        reason is that the symmetries we need next are beautifully simple there. In Lesson 6 we
+        meet just two moves, <strong>z &rarr; z + 1</strong> and <strong>z &rarr; &minus;1/z</strong>,
+        and both are M&ouml;bius maps of the half-plane onto itself.
+      </p>
+
+      <div class="for-maths">
+        <h2>For the mathematicians</h2>
+        <p>
+          The thesis (Chapter 2.3) shows that a linear fractional transformation maps the upper
+          half-plane onto the unit disc, and the real line together with &infin; onto the unit circle,
+          if and only if it has the form f(z) = e<sup>i&alpha;</sup>(z &minus; z&#8320;)/(z &minus;
+          <span style="text-decoration:overline">z&#8320;</span>) with Im z&#8320; &gt; 0 and &alpha;
+          real. The page uses the inverse of the case &alpha; = &pi;, z&#8320; = i, namely
+          w = i(1 &minus; z)/(1 + z), which sends &minus;i, 1, i to &minus;1, 0, 1.
+        </p>
+        <p>
+          Pulling back the disc's element of arc length 2|dz|/(1 &minus; |z|&sup2;) gives
+          ds = |dz| / y on the half-plane, and the thesis shows this does not depend on which
+          Cayley transform is used. The page checks invariance numerically: it computes the disc
+          distance with the thesis's formula and the half-plane distance with the standard
+          equivalent, cosh d = 1 + |w&#8321; &minus; w&#8322;|&sup2; / (2 Im w&#8321; Im w&#8322;).
+        </p>
+      </div>
+
+      <h2>Something to think about</h2>
+      <p>
+        In the half-plane, the circles of hyperbolic radius 1, 2 and 3 around <em>i</em> are
+        ordinary circles, but their centres are not at <em>i</em>. Where are their centres, and
+        why do they drift upwards as they grow?
+      </p>
+
+      <h2>References</h2>
+      <ol class="refs">
+        <li>Philip Bos, <em>On Ramanujan's &tau;-function, Modular Forms and Hecke Operators</em>, MSc thesis, School of Mathematics and Statistics, University of Sydney, 2017, Chapter 2.1 and 2.3&ndash;2.4.</li>
+        <li>C. L. Siegel, <em>Topics in Complex Function Theory</em>, Vol. II, Wiley, New York, 1969, Chapter 1.</li>
+        <li>H. E. Wolfe, <em>Introduction to Non-Euclidean Geometry</em>, Holt, Rinehart &amp; Winston, New York, 1945, pp. 237&ndash;240 (inversion).</li>
+        <li>I. Stewart and D. Tall, <em>Complex Analysis</em>, Cambridge University Press, 1996.</li>
+      </ol>
+
+      <nav class="lesson-nav" aria-label="Lesson navigation">
+        <a href="../04-distance/">&larr; Lesson 4: How far is the edge?</a>
+        <span>Next: The modular group (coming soon)</span>
+      </nav>
+
+    </div>
+  </article>
+
+</div>
+
+<script src="js/app.js"></script>
+</body>
+</html>
