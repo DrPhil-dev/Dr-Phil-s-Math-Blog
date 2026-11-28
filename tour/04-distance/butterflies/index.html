@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Butterflies on the Disc | From Euclid to Ramanujan</title>
+<meta name="description" content="A butterfly walks across the Poincaré disc, shrinking on screen while staying exactly the same size in hyperbolic geometry, and leaves a trail of footprints behind it." />
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='14' fill='%230d131a' stroke='%23eef2f5' stroke-width='1.5'/%3E%3Cellipse cx='12' cy='14' rx='4' ry='6' fill='%23e3a548'/%3E%3Cellipse cx='20' cy='14' rx='4' ry='6' fill='%23e3a548'/%3E%3C/svg%3E" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400..700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" />
+<style>
+/* VOICE  quiet, wondering: a night sky with one bright creature in it
+   IDEA   a specimen tray that never runs out of room
+   PICTURE the disc itself, large, with the butterfly and its trail
+   COLOUR deep ink ground, a faint tiling, butterflies in amber, teal, violet and coral
+   LAYOUT disc first, controls in one row under it, then a short explanation */
+:root{color-scheme:light dark;
+  --bg:light-dark(#eef1f3,#070b10);--disc:light-dark(#ffffff,#0d131a);--ink:light-dark(#11181f,#eef2f5);
+  --muted:light-dark(#55616c,#94a3af);--line:light-dark(#d7dde2,#1f2a35);--accent:light-dark(#0a6e6a,#4fc3bb);
+  --tile:light-dark(rgba(10,40,60,.16),rgba(150,200,230,.13))}
+:root[data-theme=light]{color-scheme:light}:root[data-theme=dark]{color-scheme:dark}
+*{box-sizing:border-box;min-width:0}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.55 Geist,system-ui,sans-serif;overflow-x:clip}
+a{color:var(--accent)}
+.top{display:flex;justify-content:space-between;align-items:center;gap:1rem;padding:14px max(4vw,16px);border-bottom:1px solid var(--line);flex-wrap:wrap}
+.top b{font-size:17px}.top small{display:block;color:var(--muted);font-size:13px}
+.top a{font-size:14px;font-weight:600;text-decoration:none;border:1px solid var(--line);padding:8px 12px;border-radius:999px}
+.stage{display:grid;justify-items:center;padding:clamp(12px,3vw,32px) 12px 8px}
+.wrap{position:relative;width:min(92vw,78vh,760px);aspect-ratio:1}
+.wrap canvas{position:absolute;inset:0;width:100%;height:100%;touch-action:none}
+.hud{display:flex;margin-top:14px;justify-content:center;gap:8px;flex-wrap:wrap;pointer-events:none}
+.pill{font:600 12px/1 "JetBrains Mono",monospace;background:var(--disc);border:1px solid var(--line);color:var(--muted);padding:7px 10px;border-radius:999px;white-space:nowrap}
+.pill b{color:var(--ink)}
+.controls{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;align-items:center;padding:20px 16px 8px}
+button,select{font:600 14px Geist,system-ui,sans-serif;min-height:44px;padding:0 16px;border-radius:999px;border:1px solid var(--line);background:var(--disc);color:var(--ink);cursor:pointer}
+button.primary{background:var(--accent);border-color:var(--accent);color:var(--disc)}
+button:focus-visible,select:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+label.sp{display:flex;align-items:center;gap:8px;font-size:14px;color:var(--muted)}
+label.sp input[type=range]{width:120px;accent-color:var(--accent)}
+label.ck{display:flex;align-items:center;gap:6px;font-size:14px;color:var(--muted);cursor:pointer}
+label.ck input{width:18px;height:18px;accent-color:var(--accent)}
+.text{max-width:680px;margin:0 auto;padding:16px max(5vw,16px) 56px}
+.text h1{font-size:clamp(28px,4vw,40px);line-height:1.08;text-wrap:balance;margin:.4em 0 .4em}
+.text h2{font-size:19px;margin:1.6em 0 .3em}
+.text p{margin:.6em 0;color:var(--ink)}
+.text .note{font-size:14px;color:var(--muted)}
+.nav{display:flex;justify-content:space-between;gap:1rem;font-size:14px;margin-top:2rem;flex-wrap:wrap}
+@media (prefers-reduced-motion: reduce){.motion-note{display:block}}
+</style>
+</head>
+<body>
+<span id="probe" hidden></span>
+
+<header class="top">
+  <div><b>Butterflies on the Disc</b><small>From Euclid to Ramanujan &middot; a companion to Lesson 4</small></div>
+  <a href="../">&larr; Lesson 4: How far is the edge?</a>
+</header>
+
+<section class="stage">
+  <div class="wrap" id="wrap">
+    <canvas id="bg" aria-hidden="true"></canvas>
+    <canvas id="gl" aria-label="A butterfly walking across the Poincaré disc, leaving a trail of ever smaller footprints"></canvas>
+
+  </div>
+  <div class="hud" aria-live="polite">
+      <span class="pill">distance from centre <b id="hDist">0.00</b></span>
+      <span class="pill">size on screen <b id="hSize">100%</b></span>
+      <span class="pill">size in the disc's geometry <b>always the same</b></span>
+    </div>
+</section>
+
+<div class="controls">
+  <button class="primary" id="playBtn" type="button">Pause</button>
+  <select id="pathSel" aria-label="Path">
+    <option value="out">Walk out from the centre</option>
+    <option value="across">Walk right across the disc</option>
+  </select>
+  <label class="sp">Speed <input type="range" id="speed" min="0.3" max="2.5" step="0.1" value="1.1" /></label>
+  <label class="ck"><input type="checkbox" id="tileChk" checked /> Tiling</label>
+  <button id="clearBtn" type="button">Clear the trail</button>
+</div>
+
+<article class="text">
+  <h1>A butterfly that never gets smaller</h1>
+  <p>
+    The butterfly flies in a straight line of the disc's geometry, and every so often it leaves a
+    footprint: an exact copy of itself. On your screen the copies shrink towards the rim, but
+    measured the way Lesson 4 taught us, every one of them is <strong>exactly the same size</strong>,
+    and each footprint is the same distance from the last. The butterfly keeps walking and never
+    reaches the edge, because the edge is infinitely far away.
+  </p>
+  <p>
+    Notice that the far copies are not just smaller: they are squashed and bent, and the wings
+    nearer the rim are smaller than the wings nearer the centre. Each copy is made by a M&ouml;bius
+    transformation (Lesson 5), which keeps every angle the same but stretches different parts by
+    different amounts. The faint background is a tiling of the disc by eight-sided tiles, three
+    meeting at every corner, all of them the same size too.
+  </p>
+  <h2>A nod to Escher</h2>
+  <p>
+    M. C. Escher made the same idea famous with fish in his
+    <a href="https://en.wikipedia.org/wiki/Circle_Limit_III" target="_blank" rel="noopener"><em>Circle Limit</em> woodcuts</a>.
+    Those prints are still in copyright, so the butterfly here is an original drawing, made for
+    this page.
+  </p>
+  <h2>For the mathematicians</h2>
+  <p class="note">
+    Each copy is the image of one fixed butterfly near 0 under
+    z &#8614; M<sub>c</sub>(T<sub>a</sub>(e<sup>i&phi;</sup>z)), where T<sub>a</sub>(z) = (z + a)/(1 + &#257;z) with
+    a = tanh(s/2)e<sup>i&phi;</sup>, s the hyperbolic distance walked and M<sub>c</sub> = T<sub>c</sub> an optional
+    offset of the path. The map is computed on the graphics card, vertex by vertex, so the
+    butterfly is genuinely transformed, not just scaled. Its size on screen relative to the centre is
+    1 &minus; |z|&sup2;, the reciprocal of the factor in ds = 2|dz|/(1 &minus; |z|&sup2;). Footprints are 0.8
+    units apart. The tiling is {8,3}: the central octagon has circumradius
+    &radic;(cos(&pi;/8 + &pi;/3) / cos(&pi;/8 &minus; &pi;/3)), and the rest come from reflecting it in its
+    sides (inversion in the sides' circles).
+  </p>
+  <div class="nav">
+    <a href="../">&larr; Lesson 4: How far is the edge?</a>
+    <a href="../../05-mobius/">Lesson 5: From the disc to the half-plane &rarr;</a>
+  </div>
+</article>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+{
+  // ---------- complex helpers, [re, im] ----------
+  const cm = (a, b) => [a[0]*b[0] - a[1]*b[1], a[0]*b[1] + a[1]*b[0]];
+  const cadd = (a, b) => [a[0]+b[0], a[1]+b[1]];
+  const csub = (a, b) => [a[0]-b[0], a[1]-b[1]];
+  const cdiv = (a, b) => { const d = b[0]*b[0] + b[1]*b[1]; return [(a[0]*b[0] + a[1]*b[1])/d, (a[1]*b[0] - a[0]*b[1])/d]; };
+  const conj = (a) => [a[0], -a[1]];
+  const cabs = (a) => Math.hypot(a[0], a[1]);
+  const cis = (t) => [Math.cos(t), Math.sin(t)];
+  const sc = (a, k) => [a[0]*k, a[1]*k];
+  // a Möbius map as a 2x2 complex matrix [A, B, C, D] : z -> (Az + B)/(Cz + D)
+  const matMul = (m, n) => [
+    cadd(cm(m[0], n[0]), cm(m[1], n[2])), cadd(cm(m[0], n[1]), cm(m[1], n[3])),
+    cadd(cm(m[2], n[0]), cm(m[3], n[2])), cadd(cm(m[2], n[1]), cm(m[3], n[3]))];
+  const ID = [[1,0],[0,0],[0,0],[1,0]];
+  const rot = (phi) => [cis(phi), [0,0], [0,0], [1,0]];
+  const trans = (a) => [[1,0], a, conj(a), [1,0]];
+  const apply = (m, z) => cdiv(cadd(cm(m[0], z), m[1]), cadd(cm(m[2], z), m[3]));
+
+  const wrap = document.getElementById('wrap');
+  const bg = document.getElementById('bg'), glc = document.getElementById('gl');
+  const VIEW = 1.04;
+  const isDark = () => {
+    const t = document.documentElement.getAttribute('data-theme');
+    return t ? t === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches;
+  };
+
+  // ---------- the {8,3} tiling, drawn once on a 2D canvas ----------
+  function geodesicPts(p, q, n) {
+    const cr = p[0]*q[1] - p[1]*q[0];
+    if (Math.abs(cr) < 1e-10) { const o = []; for (let i = 0; i <= n; i++) o.push(cadd(p, sc(csub(q, p), i/n))); return o; }
+    const pi = sc(p, 1/(p[0]*p[0] + p[1]*p[1]));
+    const d = 2*(p[0]*(q[1]-pi[1]) + q[0]*(pi[1]-p[1]) + pi[0]*(p[1]-q[1]));
+    const a2 = p[0]*p[0]+p[1]*p[1], b2 = q[0]*q[0]+q[1]*q[1], c2 = pi[0]*pi[0]+pi[1]*pi[1];
+    const c = [(a2*(q[1]-pi[1]) + b2*(pi[1]-p[1]) + c2*(p[1]-q[1]))/d, (a2*(pi[0]-q[0]) + b2*(p[0]-pi[0]) + c2*(q[0]-p[0]))/d];
+    const r = cabs(csub(p, c));
+    const t1 = Math.atan2(p[1]-c[1], p[0]-c[0]);
+    let dt = Math.atan2(q[1]-c[1], q[0]-c[0]) - t1;
+    while (dt > Math.PI) dt -= 2*Math.PI; while (dt < -Math.PI) dt += 2*Math.PI;
+    const o = []; for (let i = 0; i <= n; i++) o.push(cadd(c, sc(cis(t1 + dt*i/n), r)));
+    return { pts: o, c, r };
+  }
+  function edgeCircle(p, q) {
+    const g = geodesicPts(p, q, 1);
+    return g.c ? g : null;
+  }
+  const reflect = (z, e) => cadd(e.c, sc(cdiv([1,0], conj(csub(z, e.c))), e.r*e.r)); // inversion in the edge's circle
+  function buildTiling() {
+    const P = 8, Q = 3;
+    const r0 = Math.sqrt(Math.cos(Math.PI/P + Math.PI/Q) / Math.cos(Math.PI/P - Math.PI/Q));
+    const first = []; for (let k = 0; k < P; k++) first.push(sc(cis(2*Math.PI*k/P + Math.PI/P), r0));
+    const key = (poly) => { let x = 0, y = 0; poly.forEach(v => { x += v[0]; y += v[1]; }); return Math.round(x/P*2000) + ',' + Math.round(y/P*2000); };
+    const seen = new Set([key(first)]), out = [first], queue = [first];
+    while (queue.length && out.length < 2600) {
+      const poly = queue.shift();
+      for (let k = 0; k < P; k++) {
+        const e = edgeCircle(poly[k], poly[(k+1)%P]);
+        if (!e) continue;
+        const np = poly.map(v => reflect(v, e));
+        const size = cabs(csub(np[0], np[4]));
+        if (size < 0.006) continue;
+        const kk = key(np);
+        if (seen.has(kk)) continue;
+        seen.add(kk); out.push(np); queue.push(np);
+      }
+    }
+    return out;
+  }
+  const TILES = buildTiling();
+  let showTiles = true;
+
+  function drawBg() {
+    const dpr = Math.min(devicePixelRatio || 1, 2), w = wrap.clientWidth;
+    bg.width = bg.height = Math.round(w*dpr);
+    const g = bg.getContext('2d');
+    const probe = document.getElementById('probe');
+    const col = (v) => { probe.style.color = 'var(' + v + ')'; return getComputedStyle(probe).color; };
+    g.setTransform(1,0,0,1,0,0); g.clearRect(0,0,bg.width,bg.height);
+    const s = bg.width/(2*VIEW);
+    g.setTransform(s, 0, 0, -s, bg.width/2, bg.height/2);
+    g.beginPath(); g.arc(0, 0, 1, 0, 2*Math.PI);
+    g.fillStyle = col('--disc'); g.fill();
+    if (showTiles) {
+      g.save(); g.beginPath(); g.arc(0, 0, 1, 0, 2*Math.PI); g.clip();
+      g.strokeStyle = col('--tile'); g.lineWidth = 1.1/s;
+      g.beginPath();
+      TILES.forEach(poly => {
+        for (let k = 0; k < poly.length; k++) {
+          const p = poly[k], q = poly[(k+1)%poly.length];
+          const n = Math.max(2, Math.min(14, Math.round(cabs(csub(p, q))*60)));
+          const pts = geodesicPts(p, q, n).pts || geodesicPts(p, q, n);
+          g.moveTo(pts[0][0], pts[0][1]); for (let i = 1; i < pts.length; i++) g.lineTo(pts[i][0], pts[i][1]);
+        }
+      });
+      g.stroke(); g.restore();
+    }
+    g.beginPath(); g.arc(0, 0, 1, 0, 2*Math.PI);
+    g.strokeStyle = col('--ink'); g.lineWidth = 2/s; g.stroke();
+  }
+
+  // ---------- the butterfly, an original drawing on a canvas (heading towards +x) ----------
+  function butterflyTexture() {
+    const N = 512, c = document.createElement('canvas'); c.width = c.height = N;
+    const g = c.getContext('2d');
+    g.translate(N/2, N/2);
+    // draw with the body along the y axis of the canvas, head up; rotated into +x later by the mesh
+    const fore = () => { g.beginPath(); g.moveTo(6, -40); g.bezierCurveTo(40, -150, 150, -228, 236, -214);
+      g.bezierCurveTo(250, -150, 222, -70, 168, -22); g.bezierCurveTo(120, 6, 50, 8, 8, 0); g.closePath(); };
+    const hind = () => { g.beginPath(); g.moveTo(8, 6); g.bezierCurveTo(90, 0, 178, 40, 186, 110);
+      g.bezierCurveTo(192, 170, 140, 214, 96, 206); g.bezierCurveTo(54, 198, 22, 120, 6, 40); g.closePath(); };
+    const panel = (shape, from, to) => {
+      shape();
+      const gr = g.createRadialGradient(0, 0, 10, from, to, 260);
+      gr.addColorStop(0, '#5a5a5a'); gr.addColorStop(0.25, '#ffffff'); gr.addColorStop(1, '#e9e9e9');
+      g.fillStyle = gr; g.fill();
+      g.save(); shape(); g.clip();
+      g.lineWidth = 46; g.strokeStyle = '#161616'; shape(); g.stroke(); // dark margin
+      g.restore();
+      g.lineWidth = 6; g.strokeStyle = '#161616'; shape(); g.stroke();
+    };
+    const wing = (sx) => {
+      g.save(); g.scale(sx, 1);
+      panel(hind, 120, 150);
+      panel(fore, 160, -160);
+      // veins
+      g.lineWidth = 3; g.strokeStyle = 'rgba(22,22,22,.5)'; g.lineCap = 'round';
+      [[226,-200],[232,-150],[205,-90],[160,-36]].forEach(([x, y]) => { g.beginPath(); g.moveTo(12, -12); g.quadraticCurveTo(x*0.42, y*0.8, x, y); g.stroke(); });
+      [[180,100],[150,180],[90,200]].forEach(([x, y]) => { g.beginPath(); g.moveTo(12, 16); g.quadraticCurveTo(x*0.55, y*0.35, x, y); g.stroke(); });
+      // white spots along the dark margins
+      g.fillStyle = '#ffffff';
+      [[200,-205],[225,-182],[232,-140],[222,-100],[198,-62],[166,-32]].forEach(([x, y]) => { g.beginPath(); g.arc(x - 9, y + 8, 6.5, 0, 7); g.fill(); });
+      [[176,96],[178,140],[156,182],[118,198],[80,196]].forEach(([x, y]) => { g.beginPath(); g.arc(x - 10, y - 4, 6, 0, 7); g.fill(); });
+      // a bar on the forewing and an eyespot on the hindwing
+      g.save(); fore(); g.clip(); g.lineWidth = 16; g.strokeStyle = '#161616'; g.lineCap = 'round';
+      g.beginPath(); g.moveTo(92, -168); g.quadraticCurveTo(118, -120, 150, -96); g.stroke(); g.restore();
+      const eye = (x, y, r) => {
+        g.beginPath(); g.arc(x, y, r, 0, 7); g.fillStyle = '#161616'; g.fill();
+        g.beginPath(); g.arc(x, y, r*0.66, 0, 7); g.fillStyle = '#ffffff'; g.fill();
+        g.beginPath(); g.arc(x, y, r*0.36, 0, 7); g.fillStyle = '#161616'; g.fill();
+      };
+      eye(112, 118, 24);
+      g.restore();
+    };
+    wing(1); wing(-1);
+    // body and antennae
+    g.fillStyle = '#1b1b1b';
+    g.beginPath(); g.ellipse(0, 10, 13, 92, 0, 0, 7); g.fill();
+    g.beginPath(); g.arc(0, -88, 15, 0, 7); g.fill();
+    g.lineWidth = 5; g.strokeStyle = '#1b1b1b'; g.lineCap = 'round';
+    [-1, 1].forEach(sx => { g.beginPath(); g.moveTo(sx*5, -98); g.quadraticCurveTo(sx*30, -170, sx*64, -200); g.stroke(); g.beginPath(); g.arc(sx*66, -202, 8, 0, 7); g.fill(); });
+    const t = new THREE.CanvasTexture(c);
+    t.anisotropy = 4;
+    return t;
+  }
+
+  // ---------- three.js scene ----------
+  const renderer = new THREE.WebGLRenderer({ canvas: glc, antialias: true, alpha: true });
+  const scene = new THREE.Scene();
+  const camera = new THREE.OrthographicCamera(-VIEW, VIEW, VIEW, -VIEW, -1, 1);
+  const tex = butterflyTexture();
+  const H = 0.17; // half-size of the butterfly near the centre
+  const geom = new THREE.PlaneGeometry(2*H, 2*H, 48, 48);
+  // rotate the drawing so the head points along +x, the direction of travel
+  geom.rotateZ(-Math.PI/2);
+
+  const vert = `
+    uniform vec2 uA, uB, uC, uD; uniform float uFlap;
+    varying vec2 vUv;
+    vec2 cm(vec2 a, vec2 b){ return vec2(a.x*b.x - a.y*b.y, a.x*b.y + a.y*b.x); }
+    vec2 cd(vec2 a, vec2 b){ float d = dot(b, b); return vec2(a.x*b.x + a.y*b.y, a.y*b.x - a.x*b.y) / d; }
+    void main(){
+      vUv = uv;
+      vec2 z = position.xy; z.y *= uFlap;
+      vec2 w = cd(cm(uA, z) + uB, cm(uC, z) + uD);
+      gl_Position = projectionMatrix * modelViewMatrix * vec4(w, 0.0, 1.0);
+    }`;
+  const frag = `
+    uniform sampler2D uTex; uniform vec3 uTint; uniform float uAlpha;
+    varying vec2 vUv;
+    void main(){
+      vec4 t = texture2D(uTex, vUv);
+      if (t.a < 0.04) discard;
+      vec3 col = mix(uTint * 0.22, uTint, smoothstep(0.08, 0.9, t.r));
+      col = mix(col, vec3(1.0), smoothstep(0.93, 1.0, t.r) * 0.55);
+      gl_FragColor = vec4(col, t.a * uAlpha);
+    }`;
+  const PALETTE = ['#e3a548', '#4fc3bb', '#a586f0', '#e66a5a'];
+  function makeButterfly(tint) {
+    const mat = new THREE.ShaderMaterial({
+      vertexShader: vert, fragmentShader: frag, transparent: true, depthTest: false,
+      uniforms: {
+        uA: { value: new THREE.Vector2(1, 0) }, uB: { value: new THREE.Vector2() },
+        uC: { value: new THREE.Vector2() }, uD: { value: new THREE.Vector2(1, 0) },
+        uFlap: { value: 1 }, uTex: { value: tex }, uTint: { value: new THREE.Color(tint) }, uAlpha: { value: 1 }
+      }
+    });
+    const m = new THREE.Mesh(geom, mat);
+    m.frustumCulled = false;
+    return m;
+  }
+  function setPose(mesh, M) {
+    const u = mesh.material.uniforms;
+    u.uA.value.set(M[0][0], M[0][1]); u.uB.value.set(M[1][0], M[1][1]);
+    u.uC.value.set(M[2][0], M[2][1]); u.uD.value.set(M[3][0], M[3][1]);
+  }
+
+  // ---------- the walk ----------
+  const STEP = 0.8, GOLDEN = Math.PI*(3 - Math.sqrt(5)), MAX_PRINTS = 260;
+  let pathMode = 'out', speed = 1.1, playing = !matchMedia('(prefers-reduced-motion: reduce)').matches;
+  let walkNo = 0, phi = 0.35, s = 0, sStart = 0, sEnd = 7.2, nextPrint = 0, offset = ID;
+  const prints = [];
+  const flyer = makeButterfly('#ffffff');
+  flyer.renderOrder = 1000;
+  scene.add(flyer);
+
+  function startWalk() {
+    walkNo++;
+    phi += GOLDEN;
+    flyer.material.uniforms.uTint.value.set(PALETTE[walkNo % PALETTE.length]);
+    if (pathMode === 'out') { offset = ID; sStart = 0; sEnd = 7.2; }
+    else { offset = trans(sc(cis(phi + Math.PI/2), Math.tanh(0.35))); sStart = -6.6; sEnd = 6.6; }
+    s = sStart;
+    nextPrint = pathMode === 'out' ? STEP : Math.ceil(sStart/STEP)*STEP;
+  }
+  function pose(sv) {
+    const a = sc(cis(phi), Math.tanh(sv/2));
+    return matMul(offset, matMul(trans(a), rot(phi)));
+  }
+  function stamp(sv) {
+    const m = makeButterfly(PALETTE[walkNo % PALETTE.length]);
+    setPose(m, pose(sv));
+    m.renderOrder = prints.length;
+    scene.add(m); prints.push(m);
+    while (prints.length > MAX_PRINTS) { const o = prints.shift(); scene.remove(o); o.material.dispose(); }
+  }
+
+  const hDist = document.getElementById('hDist'), hSize = document.getElementById('hSize');
+  let last = performance.now(), clock = 0;
+  function frame(now) {
+    const dt = Math.min(0.05, (now - last)/1000); last = now;
+    if (playing) {
+      clock += dt;
+      s += speed*dt;
+      while (s >= nextPrint && nextPrint <= sEnd) { stamp(nextPrint); nextPrint += STEP; }
+      if (s > sEnd) startWalk();
+    }
+    const M = pose(s);
+    setPose(flyer, M);
+    flyer.material.uniforms.uFlap.value = playing ? 0.35 + 0.65*Math.abs(Math.cos(clock*7)) : 1;
+    const z = apply(M, [0, 0]), r = cabs(z);
+    hDist.textContent = (Math.log((1 + r)/(1 - r))).toFixed(2);
+    const pct = (1 - r*r)*100;
+    hSize.textContent = (pct < 1 ? pct.toFixed(2) : pct.toFixed(0)) + '%';
+    renderer.render(scene, camera);
+    requestAnimationFrame(frame);
+  }
+
+  function resize() {
+    const w = wrap.clientWidth;
+    renderer.setPixelRatio(Math.min(devicePixelRatio || 1, 2));
+    renderer.setSize(w, w, false);
+    drawBg();
+  }
+  new ResizeObserver(resize).observe(wrap);
+
+  // ---------- controls ----------
+  const playBtn = document.getElementById('playBtn');
+  const syncPlay = () => (playBtn.textContent = playing ? 'Pause' : 'Play');
+  playBtn.addEventListener('click', () => { playing = !playing; syncPlay(); });
+  document.getElementById('speed').addEventListener('input', (e) => (speed = parseFloat(e.target.value)));
+  document.getElementById('tileChk').addEventListener('change', (e) => { showTiles = e.target.checked; drawBg(); });
+  function clearTrail() { prints.splice(0).forEach(o => { scene.remove(o); o.material.dispose(); }); }
+  document.getElementById('clearBtn').addEventListener('click', () => { clearTrail(); startWalk(); });
+  document.getElementById('pathSel').addEventListener('change', (e) => { pathMode = e.target.value; clearTrail(); startWalk(); });
+  matchMedia('(prefers-color-scheme: dark)').addEventListener('change', drawBg);
+  new MutationObserver(drawBg).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+
+  startWalk();
+  syncPlay();
+  resize();
+  requestAnimationFrame(frame);
+}
+</script>
+</body>
+</html>
